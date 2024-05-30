@@ -11,6 +11,7 @@ export const ZodBandSchema = z.object({
     .max(255),
   rehearsals: z.array(
     z.object({
+      _id: z.any().optional(),
       start: z.date({
         invalid_type_error: 'Start must be a date',
         message: 'Start is required',

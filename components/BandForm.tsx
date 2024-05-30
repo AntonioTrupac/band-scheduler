@@ -15,13 +15,15 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { z } from 'zod';
 import { DateTimePicker } from './ui/datetime';
-import { createBand, FetchBandsResponse } from '@/actions/bandActions';
+import {
+  createBand,
+  FetchBandsResponse,
+  updateBand,
+} from '@/actions/bandActions';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 const ZodFormSchema = z.object({
-  _id: z.string().optional(),
   name: z
     .string({
       invalid_type_error: 'Name must be a string',
@@ -65,8 +67,6 @@ type BandFormType = z.infer<typeof ZodFormSchema>;
 
 export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
   const { toast } = useToast();
-
-  const [dateTime, setDateTime] = useState<Date>(new Date());
   const router = useRouter();
   const form = useForm<BandFormType>({
     resolver: zodResolver(ZodFormSchema),
@@ -80,33 +80,39 @@ export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
     },
   });
 
+  /* 
+    TODO: add validation for rehearsal start and end
+    - start must be before end
+    - start must be in the future or current date with time
+
+    TODO: add validation for band name or id
+    - name must be unique
+    - name must be a string
+
+    TODO: check if band name already exists (via name or _id)
+    - if it exists add another rehearsal to the band/rehearsal array
+
+    TODO: If the timeslot is already taken, show an error message in the form screen
+  */
+
   const onSubmit = async (data: BandFormType) => {
-    /* 
-      TODO: add validation for rehearsal start and end
-      - start must be before end
-      - start must be in the future or current date with time
-
-      TODO: add validation for band name or id
-      - name must be unique
-      - name must be a string
-
-      TODO: check if band name already exists (via name or _id)
-      - if it exists add another rehearsal to the band/rehearsal array
-
-      TODO: If the timeslot is already taken, show an error message in the form screen
-    */
-
-    const existingBand = bands?.find((band) => band.name === band.name);
+    const existingBand = bands?.find((band) => band.name === data.name);
 
     if (existingBand) {
       const conflict = existingBand.rehearsals.some((r) => {
+        const dateStart = new Date(data.rehearsal.start);
+        const dateEnd = new Date(data.rehearsal.end);
+        const rehearsalStart = new Date(r.start);
+        const rehearsalEnd = new Date(r.end);
+
         return (
-          (data.rehearsal.start >= r.start && data.rehearsal.start <= r.end) ||
-          (data.rehearsal.end >= r.start && data.rehearsal.end <= r.end)
+          (dateStart >= rehearsalStart && dateStart <= rehearsalEnd) ||
+          (dateEnd >= rehearsalStart && dateEnd <= rehearsalEnd)
         );
       });
 
       if (conflict) {
+        console.log('conflict');
         toast({
           title: 'Error selecting a slot',
           description: 'The selected slot is already taken',
@@ -115,7 +121,7 @@ export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
         return;
       }
 
-      const updatedBand = await createBand({
+      const updatedBand = await updateBand({
         ...existingBand,
         rehearsals: [
           ...existingBand.rehearsals,
@@ -159,78 +165,79 @@ export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
         });
       }
     }
-
-    // form.reset();
   };
+
   return (
     <>
       <h2>Register your band</h2>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4 max-w-2xl w-full"
+        >
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Band Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="shadcn" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Enter your band name. This will be used to identify your band.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <h1>Rehearsals</h1>
-          <FormField
-            control={form.control}
-            name="rehearsal.title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Rehearsal title" {...field} />
+                  <Input placeholder="Band Name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="rehearsal.start"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Reherseal start</FormLabel>
-                <DateTimePicker date={field.value} setDate={field.onChange} />
-                <FormDescription>
-                  Select the start date and time of your rehearsal.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <h2 className="mb-4">Rehearsals</h2>
+            <div className="space-y-8">
+              <FormField
+                control={form.control}
+                name="rehearsal.title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Rehearsal Title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="rehearsal.end"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Reherseal end</FormLabel>
-                <DateTimePicker date={field.value} setDate={field.onChange} />
-                <FormDescription>
-                  Select the end date and time of your rehearsal.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button suppressHydrationWarning type="submit">
-            Submit
-          </Button>
+              <FormField
+                control={form.control}
+                name="rehearsal.start"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Rehearsal Start</FormLabel>
+                    <DateTimePicker
+                      date={field.value}
+                      setDate={field.onChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="rehearsal.end"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Rehearsal End</FormLabel>
+                    <DateTimePicker
+                      date={field.value}
+                      setDate={field.onChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+          <Button type="submit">Submit</Button>
         </form>
       </Form>
     </>

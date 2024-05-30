@@ -16,7 +16,7 @@ export const fetchBands = async (): Promise<FetchBandsResponse> => {
     const bands = await BandModel.find({
       name: { $exists: true },
       rehearsals: { $exists: true },
-    });
+    }).lean();
 
     const validateSchema = ZodBandSchema.array().safeParse(bands);
 
@@ -33,7 +33,12 @@ export const fetchBands = async (): Promise<FetchBandsResponse> => {
         return {
           _id: band._id.toString(),
           name: band.name,
-          rehearsals: band.rehearsals,
+          rehearsals: band.rehearsals.map((rehearsal) => ({
+            _id: rehearsal._id?.toString(),
+            start: rehearsal.start,
+            end: rehearsal.end,
+            title: rehearsal.title,
+          })),
         };
       }),
     };
@@ -62,7 +67,7 @@ export const createBand = async (
         errors: validateBandSchema.error.errors,
       };
     }
-    console.log('VALIDATE', validateBandSchema.data);
+
     const newBand = new BandModel(validateBandSchema.data);
     await newBand.save();
 
@@ -96,11 +101,19 @@ export const updateBand = async (
       };
     }
 
-    const _id = Object(band._id);
+    const { _id, ...updateData } = band;
+    if (!_id) {
+      return {
+        success: false,
+        errors: { message: 'Band ID is required for update' },
+      };
+    }
 
-    const updatedBand = await BandModel.findByIdAndUpdate(_id, band, {
+    const updatedBand = await BandModel.findByIdAndUpdate(_id, updateData, {
       new: true,
-    });
+    }).lean();
+
+    console.log('updated band', updatedBand);
 
     if (!updatedBand) {
       return {
@@ -111,7 +124,14 @@ export const updateBand = async (
 
     return {
       success: true,
-      data: updatedBand,
+      data: {
+        ...updatedBand,
+        _id: updatedBand._id.toString(),
+        rehearsals: updatedBand.rehearsals.map((rehearsal) => ({
+          ...rehearsal,
+          _id: rehearsal._id?.toString(),
+        })),
+      },
     };
   } catch (error) {
     console.error(error);

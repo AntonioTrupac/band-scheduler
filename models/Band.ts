@@ -3,6 +3,7 @@ import { Model, models, model, Document, Schema } from 'mongoose';
 export type BandType = {
   name: string;
   rehearsals: {
+    _id?: string;
     start: Date;
     end: Date;
     title: string;

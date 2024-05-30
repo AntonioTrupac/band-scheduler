@@ -1,11 +1,4 @@
-import mongoose, {
-  Model,
-  models,
-  model,
-  Document,
-  Schema,
-  InferSchemaType,
-} from 'mongoose';
+import { Model, models, model, Document, Schema } from 'mongoose';
 
 export type BandType = {
   name: string;

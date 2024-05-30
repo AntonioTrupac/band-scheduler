@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z, ZodIssue } from 'zod';
 
 export const ZodBandSchema = z.object({
-  _id: z.string().optional(),
+  _id: z.any().optional(),
   name: z
     .string({
       invalid_type_error: 'Name must be a string',
@@ -28,3 +28,9 @@ export const ZodBandSchema = z.object({
 });
 
 export type BandZodType = z.infer<typeof ZodBandSchema>;
+
+export type CreateBandResponse = {
+  success: boolean;
+  data?: BandZodType;
+  errors?: ZodIssue[];
+};

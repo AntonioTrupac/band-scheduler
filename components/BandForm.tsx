@@ -17,53 +17,13 @@ import { z } from 'zod';
 import { DateTimePicker } from './ui/datetime';
 import {
   createBand,
+  createOrUpdateBand,
   FetchBandsResponse,
   updateBand,
 } from '@/actions/bandActions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
-
-const ZodFormSchema = z.object({
-  name: z
-    .string({
-      invalid_type_error: 'Name must be a string',
-      message: 'Name is required',
-    })
-    .min(1)
-    .max(255),
-  rehearsal: z
-    .object({
-      start: z
-        .date({
-          invalid_type_error: 'Start must be a date',
-          message: 'Start is required',
-        })
-        .refine((date) => date >= new Date(), {
-          message: 'Start date must be in the future',
-        }),
-      end: z.date({
-        invalid_type_error: 'End must be a date',
-        message: 'End is required',
-      }),
-      title: z
-        .string({
-          invalid_type_error: 'Title must be a string',
-          message: 'Title is required',
-        })
-        .min(1),
-    })
-    .superRefine(({ start, end }, ctx) => {
-      if (end <= start) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'End date must be after start date',
-          path: ['end'],
-        });
-      }
-    }),
-});
-
-type BandFormType = z.infer<typeof ZodFormSchema>;
+import { BandFormType, BandZodType, ZodFormSchema } from '@/types/band';
 
 export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
   const { toast } = useToast();
@@ -95,76 +55,76 @@ export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
     TODO: If the timeslot is already taken, show an error message in the form screen
   */
 
+  // const hasExistingBand =
+
+  // const handleExistingBand = (existingBand: BandZodType)
+
   const onSubmit = async (data: BandFormType) => {
-    const existingBand = bands?.find((band) => band.name === data.name);
+    const upsertResponse = await createOrUpdateBand({
+      ...data,
+      rehearsals: [
+        {
+          start: data.rehearsal.start,
+          end: data.rehearsal.end,
+          title: data.rehearsal.title,
+        },
+      ],
+    });
 
-    if (existingBand) {
-      const conflict = existingBand.rehearsals.some((r) => {
-        const dateStart = new Date(data.rehearsal.start);
-        const dateEnd = new Date(data.rehearsal.end);
-        const rehearsalStart = new Date(r.start);
-        const rehearsalEnd = new Date(r.end);
-
-        return (
-          (dateStart >= rehearsalStart && dateStart <= rehearsalEnd) ||
-          (dateEnd >= rehearsalStart && dateEnd <= rehearsalEnd)
-        );
-      });
-
-      if (conflict) {
-        console.log('conflict');
-        toast({
-          title: 'Error selecting a slot',
-          description: 'The selected slot is already taken',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const updatedBand = await updateBand({
-        ...existingBand,
-        rehearsals: [
-          ...existingBand.rehearsals,
-          {
-            start: data.rehearsal.start,
-            end: data.rehearsal.end,
-            title: data.rehearsal.title,
-          },
-        ],
-      });
-
-      if (updatedBand.success) {
-        router.push('/rehearsal');
-      } else {
-        toast({
-          title: 'Error updating band',
-          description: 'Failed to update the band',
-          variant: 'destructive',
-        });
-      }
-    } else {
-      const createResponse = await createBand({
-        name: data.name,
-        rehearsals: [
-          {
-            start: data.rehearsal.start,
-            end: data.rehearsal.end,
-            title: data.rehearsal.title,
-          },
-        ],
-      });
-
-      if (createResponse.success) {
-        router.push('/rehearsal');
-      } else {
-        toast({
-          title: 'Error creating band',
-          description:
-            createResponse.errors?.[0]?.message || 'Failed to create band',
-          variant: 'destructive',
-        });
-      }
-    }
+    // const existingBand = bands?.find((band) => band.name === data.name);
+    // if (existingBand) {
+    //   const conflict = hasRehearsalConflict(existingBand, data.rehearsal);
+    //   if (conflict) {
+    //     console.log('conflict');
+    //     toast({
+    //       title: 'Error selecting a slot',
+    //       description: 'The selected slot is already taken',
+    //       variant: 'destructive',
+    //     });
+    //     return;
+    //   }
+    //   const updatedBand = await updateBand({
+    //     ...existingBand,
+    //     rehearsals: [
+    //       ...existingBand.rehearsals,
+    //       {
+    //         start: data.rehearsal.start,
+    //         end: data.rehearsal.end,
+    //         title: data.rehearsal.title,
+    //       },
+    //     ],
+    //   });
+    //   if (updatedBand.success) {
+    //     router.push('/rehearsal');
+    //   } else {
+    //     toast({
+    //       title: 'Error updating band',
+    //       description: 'Failed to update the band',
+    //       variant: 'destructive',
+    //     });
+    //   }
+    // } else {
+    //   const createResponse = await createBand({
+    //     name: data.name,
+    //     rehearsals: [
+    //       {
+    //         start: data.rehearsal.start,
+    //         end: data.rehearsal.end,
+    //         title: data.rehearsal.title,
+    //       },
+    //     ],
+    //   });
+    //   if (createResponse.success) {
+    //     router.push('/rehearsal');
+    //   } else {
+    //     toast({
+    //       title: 'Error creating band',
+    //       description:
+    //         createResponse.errors?.[0]?.message || 'Failed to create band',
+    //       variant: 'destructive',
+    //     });
+    //   }
+    // }
   };
 
   return (

@@ -1,16 +1,14 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/api',
-  '/studio(.*)',
-]);
+const isProtectedRoute = createRouteMatcher(['/studio(.*)']);
 
 export default clerkMiddleware((auth, req) => {
+  console.log('RUNNING MIDDLEWARE 1');
   if (!auth().userId && isProtectedRoute(req)) {
+    console.log('REQ URL', req.url);
     // Add custom logic to run before redirecting
-
-    return auth().redirectToSignIn();
+    console.log('RUNNING MIDDLEWARE 2');
+    return auth().redirectToSignIn({ returnBackUrl: req.url });
   }
 });
 

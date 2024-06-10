@@ -11,6 +11,9 @@ import {
 } from '@clerk/nextjs';
 
 import { cn } from '@/lib/utils';
+import { Button } from 'react-day-picker';
+import Link from 'next/link';
+import { buttonVariants } from '@/components/ui/button';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -28,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
+      <ClerkProvider>
         <head />
         <body
           className={cn(
@@ -37,10 +40,19 @@ export default function RootLayout({
             fontSans.variable,
           )}
         >
-          <header className="flex justify-between items-center p-4">
+          <header className="flex justify-between items-center p-4 bg-slate-50">
             <h1 className="text-xl">Band Manager</h1>
-            <nav>
+            <nav className="flex items-center">
               <SignedIn>
+                <Link
+                  className={buttonVariants({
+                    variant: 'default',
+                    className: `w-full mr-4`,
+                  })}
+                  href="/studio/create"
+                >
+                  Create studio
+                </Link>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
               <SignedOut>
@@ -53,7 +65,7 @@ export default function RootLayout({
           </header>
           {children}
         </body>
-      </html>
-    </ClerkProvider>
+      </ClerkProvider>
+    </html>
   );
 }

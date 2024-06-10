@@ -23,7 +23,7 @@ import {
 } from '@/actions/bandActions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
-import { BandFormType, BandZodType, ZodFormSchema } from '@/types/band';
+import { BandFormType, ZodFormSchema } from '@/types/band';
 
 export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
   const { toast } = useToast();

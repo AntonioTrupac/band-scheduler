@@ -8,6 +8,7 @@ export type BandType = {
     end: Date;
     title: string;
   }[];
+  studio: string;
 } & Document;
 
 const BandSchema: Schema = new Schema({
@@ -31,6 +32,10 @@ const BandSchema: Schema = new Schema({
       },
     },
   ],
+  studio: {
+    type: Schema.Types.ObjectId,
+    ref: 'Studio',
+  },
 });
 
 const BandModel: Model<BandType> =

@@ -11,7 +11,6 @@ import {
 } from '@clerk/nextjs';
 
 import { cn } from '@/lib/utils';
-import { Button } from 'react-day-picker';
 import Link from 'next/link';
 import { buttonVariants } from '@/components/ui/button';
 

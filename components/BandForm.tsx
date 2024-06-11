@@ -13,7 +13,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { z } from 'zod';
 import { DateTimePicker } from './ui/datetime';
 import {
   createBand,
@@ -129,7 +128,6 @@ export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
 
   return (
     <>
-      <h2>Register your band</h2>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

@@ -4,28 +4,28 @@ import { useForm } from 'react-hook-form';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { StudioZodType } from '@/types/studio';
+import { PickedStudioZodType, ZodStudioSchema } from '@/types/studio';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { createStudio } from '@/actions/studioActions';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 export const StudioForm = () => {
-  const form = useForm({
+  const form = useForm<PickedStudioZodType>({
+    resolver: zodResolver(ZodStudioSchema.pick({ name: true, location: true })),
     defaultValues: {
       name: '',
       location: '',
-      createdBy: '',
-      bands: [],
     },
   });
 
-  const onSubmit = (data: Pick<StudioZodType, 'name' | 'location'>) => {
-    console.log('data', data);
+  const onSubmit = async (data: PickedStudioZodType) => {
+    await createStudio(data);
   };
 
   return (

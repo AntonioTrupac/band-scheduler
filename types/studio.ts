@@ -31,3 +31,9 @@ export const ZodStudioSchema = z.object({
   bands: z.array(z.string().optional()),
 });
 export type StudioZodType = z.infer<typeof ZodStudioSchema>;
+
+export const PickedZodStudioSchema = ZodStudioSchema.pick({
+  name: true,
+  location: true,
+});
+export type PickedStudioZodType = z.infer<typeof PickedZodStudioSchema>;

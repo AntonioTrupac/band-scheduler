@@ -1,3 +1,5 @@
+'use server';
+
 import connectMongo from '@/lib/mongodb';
 import StudioModel from '@/models/Studio';
 import {
@@ -5,14 +7,21 @@ import {
   StudioZodType,
   ZodStudioSchema,
 } from '@/types/studio';
+import { auth } from '@clerk/nextjs/server';
 
 export const createStudio = async (
-  studio: StudioZodType,
+  studioFormData: Pick<StudioZodType, 'name' | 'location'>,
 ): Promise<CreateStudioResponse> => {
   await connectMongo();
+  const { userId } = auth();
+  const studioData = {
+    ...studioFormData,
+    createdBy: userId,
+    bands: [],
+  };
 
   try {
-    const validateStudioSchema = ZodStudioSchema.safeParse(studio);
+    const validateStudioSchema = ZodStudioSchema.safeParse(studioData);
 
     if (!validateStudioSchema.success) {
       return {

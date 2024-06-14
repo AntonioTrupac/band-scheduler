@@ -33,9 +33,9 @@ const getCachedStudios = cache(getStudios, ['studios'], {
 
 export default async function StudioPage() {
   const studios = await getCachedStudios();
-  console.log('st', studios);
+
   return (
-    <main className="flex flex-col px-12 py-8">
+    <main className="flex flex-col p-8">
       <h1 className="mb-8 text-xl">Studios</h1>
 
       <div className="grid grid-cols-3 gap-4">

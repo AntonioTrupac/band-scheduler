@@ -25,3 +25,7 @@ const StudioModel: Model<StudioType> =
   model<StudioType>('Studio', StudioSchema);
 
 export default StudioModel;
+
+// studio => bands
+
+// create a band => add that band into a studio bands field/property

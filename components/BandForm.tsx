@@ -1,44 +1,45 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { DateTimePicker } from './ui/datetime';
+// import { DateTimePicker } from './ui/datetime';
 import {
   createBand,
-  createOrUpdateBand,
-  FetchBandsResponse,
-  updateBand,
+  // createOrUpdateBand,
+  // FetchBandsResponse,
+  // updateBand,
 } from '@/actions/bandActions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
-import { BandFormType, ZodFormSchema } from '@/types/band';
+import { CreateBandFormType, PickedZodCreateBandSchema } from '@/types/band';
 
-export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
+export const BandForm = ({ studioId }: { studioId: string }) => {
+  // const [bandNameError, setBandNameError] = useState<string | undefined>('');
   const { toast } = useToast();
   const router = useRouter();
-  const form = useForm<BandFormType>({
-    resolver: zodResolver(ZodFormSchema),
+  const form = useForm<CreateBandFormType>({
+    resolver: zodResolver(PickedZodCreateBandSchema),
     defaultValues: {
       name: '',
-      rehearsal: {
-        start: new Date(),
-        end: new Date(),
-        title: '',
-      },
+      location: '',
+      // rehearsal: {
+      //   start: new Date(),
+      //   end: new Date(),
+      //   title: '',
+      // },
     },
   });
-
   /* 
     TODO: add validation for rehearsal start and end
     - start must be before end
@@ -58,18 +59,53 @@ export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
 
   // const handleExistingBand = (existingBand: BandZodType)
 
-  const onSubmit = async (data: BandFormType) => {
-    const upsertResponse = await createOrUpdateBand({
+  const onSubmit = async (data: CreateBandFormType) => {
+    console.log(data);
+
+    const bands = await createBand({
       ...data,
-      rehearsals: [
-        {
-          start: data.rehearsal.start,
-          end: data.rehearsal.end,
-          title: data.rehearsal.title,
-        },
-      ],
+      rehearsals: [],
+      studioId,
     });
 
+    // if (bands.success) {
+    //   router.push(`studio/${studioId}/bands`);
+    // } else {
+    //   toast({
+    //     title: 'Error creating band',
+    //     description: 'Failed to create band',
+    //     variant: 'destructive',
+    //   });
+    // }
+    if (!bands.success && Array.isArray(bands.errors)) {
+      console.log('WE IN HERE BRO');
+      // setBandNameError(bands.errors?.message);
+      const bandNameError = bands.errors?.find(
+        (error) => error.path.includes('name') && error.code === 'custom',
+      );
+
+      if (bandNameError) {
+        form.setError('name', {
+          type: 'manual',
+          message: bandNameError.message,
+        });
+      }
+    } else {
+      // setBandNameError('');
+      router.push(`studio/${studioId}/bands`);
+    }
+    // console.log('band name error', bandNameError);
+
+    // const upsertResponse = await createOrUpdateBand({
+    //   ...data,
+    // rehearsals: [
+    //   {
+    //     start: data.rehearsal.start,
+    //     end: data.rehearsal.end,
+    //     title: data.rehearsal.title,
+    //   },
+    // ],
+    // });
     // const existingBand = bands?.find((band) => band.name === data.name);
     // if (existingBand) {
     //   const conflict = hasRehearsalConflict(existingBand, data.rehearsal);
@@ -140,14 +176,40 @@ export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
               <FormItem>
                 <FormLabel>Band Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Band Name" {...field} />
+                  <Input
+                    placeholder="Band Name"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      // setBandNameError('');
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+                {/* {bandNameError && (
+                  <p className="text-destructive font-medium text-[0.8rem]">
+                    {bandNameError}
+                  </p>
+                )} */}
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="Location" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div>
+          {/* <div>
             <h2 className="mb-4">Rehearsals</h2>
             <div className="space-y-8">
               <FormField
@@ -194,7 +256,7 @@ export const BandForm = ({ bands }: { bands: FetchBandsResponse['data'] }) => {
                 )}
               />
             </div>
-          </div>
+          </div> */}
           <Button type="submit">Submit</Button>
         </form>
       </Form>

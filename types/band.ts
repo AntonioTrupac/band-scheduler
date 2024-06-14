@@ -26,14 +26,24 @@ export const ZodBandSchema = z.object({
       }),
     }),
   ),
+  studioId: z.string({
+    invalid_type_error: 'Studio must be a string',
+    message: 'Studio is required',
+  }),
 });
 
 export type BandZodType = z.infer<typeof ZodBandSchema>;
 
+export type FetchBandsResponse = {
+  success: boolean;
+  data?: BandZodType[];
+  errors?: ZodIssue[];
+};
+
 export type CreateBandResponse = {
   success: boolean;
   data?: BandZodType;
-  errors?: ZodIssue[];
+  errors?: ZodIssue[] | { message: string };
 };
 
 export type CreateOrUpdateResponse = {
@@ -48,11 +58,18 @@ export type UpdateBandResponse = {
   errors?: ZodIssue[] | { message: string };
 };
 
-export const ZodFormSchema = z.object({
+export const ZodCreateBandSchema = z.object({
   name: z
     .string({
       invalid_type_error: 'Name must be a string',
       message: 'Name is required',
+    })
+    .min(1, { message: 'Name too short' })
+    .max(255, { message: 'Name too long' }),
+  location: z
+    .string({
+      invalid_type_error: 'Location must be a string',
+      message: 'Location is required',
     })
     .min(1)
     .max(255),
@@ -88,4 +105,11 @@ export const ZodFormSchema = z.object({
     }),
 });
 
-export type BandFormType = z.infer<typeof ZodFormSchema>;
+export type BandFormType = z.infer<typeof ZodCreateBandSchema>;
+
+export const PickedZodCreateBandSchema = ZodCreateBandSchema.pick({
+  name: true,
+  location: true,
+});
+
+export type CreateBandFormType = z.infer<typeof PickedZodCreateBandSchema>;

@@ -2,6 +2,7 @@ import { Model, models, model, Document, Schema } from 'mongoose';
 
 export type BandType = {
   name: string;
+  location: string;
   rehearsals: {
     _id?: string;
     start: Date;
@@ -13,6 +14,10 @@ export type BandType = {
 
 const BandSchema: Schema = new Schema({
   name: {
+    type: String,
+    required: true,
+  },
+  location: {
     type: String,
     required: true,
   },
@@ -32,7 +37,7 @@ const BandSchema: Schema = new Schema({
       },
     },
   ],
-  studio: {
+  studioId: {
     type: Schema.Types.ObjectId,
     ref: 'Studio',
   },

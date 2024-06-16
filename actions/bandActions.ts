@@ -17,7 +17,7 @@ const ifBandExists = async (bandName: string, studioId: string) => {
     studioId,
   }).lean();
 
-  return !!band;
+  return band.length > 0;
 };
 
 export const createBand = async (
@@ -25,16 +25,16 @@ export const createBand = async (
 ): Promise<CreateBandResponse> => {
   await connectMongo();
 
+  const validateBandSchema = ZodBandSchema.safeParse(band);
+
+  if (!validateBandSchema.success) {
+    return {
+      success: false,
+      errors: validateBandSchema.error.errors,
+    };
+  }
+
   try {
-    const validateBandSchema = ZodBandSchema.safeParse(band);
-
-    if (!validateBandSchema.success) {
-      return {
-        success: false,
-        errors: validateBandSchema.error.errors,
-      };
-    }
-
     const bandExists = await ifBandExists(
       validateBandSchema.data.name,
       validateBandSchema.data.studioId,

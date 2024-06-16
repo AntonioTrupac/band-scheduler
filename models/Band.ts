@@ -9,7 +9,7 @@ export type BandType = {
     end: Date;
     title: string;
   }[];
-  studio: string;
+  studioId: string;
 } & Document;
 
 const BandSchema: Schema = new Schema({

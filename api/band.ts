@@ -2,7 +2,6 @@ import 'server-only';
 import connectMongo from '@/lib/mongodb';
 import BandModel, { BandType } from '@/models/Band';
 import { FetchBandsResponse, ZodBandSchema } from '@/types/band';
-import mongoose from 'mongoose';
 
 const convertObjectIdToString = (band: BandType) => {
   return {
@@ -19,6 +18,7 @@ export const fetchBands = async (
     const bands = await BandModel.find({
       name: { $exists: true },
       rehearsals: { $exists: true },
+      location: { $exists: true },
       studioId,
     }).lean();
     console.log(bands);
@@ -43,6 +43,7 @@ export const fetchBands = async (
         return {
           _id: band._id.toString(),
           name: band.name,
+          location: band.location,
           rehearsals: band.rehearsals.map((rehearsal) => ({
             _id: rehearsal._id?.toString(),
             start: rehearsal.start,

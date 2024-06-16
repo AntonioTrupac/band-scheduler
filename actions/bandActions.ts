@@ -10,6 +10,7 @@ import {
 } from '@/types/band';
 import BandModel from '../models/Band';
 import StudioModel from '@/models/Studio';
+import { revalidateTag } from 'next/cache';
 
 const ifBandExists = async (bandName: string, studioId: string) => {
   const band = await BandModel.find({
@@ -24,7 +25,6 @@ export const createBand = async (
   band: BandZodType,
 ): Promise<CreateBandResponse> => {
   await connectMongo();
-
   const validateBandSchema = ZodBandSchema.safeParse(band);
 
   if (!validateBandSchema.success) {
@@ -60,6 +60,7 @@ export const createBand = async (
       $push: { bands: newBand._id },
     });
 
+    revalidateTag('studio');
     return {
       success: true,
       data: band,

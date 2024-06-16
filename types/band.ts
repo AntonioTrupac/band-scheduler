@@ -9,6 +9,13 @@ export const ZodBandSchema = z.object({
     })
     .min(1)
     .max(255),
+  location: z
+    .string({
+      invalid_type_error: 'Location must be a string',
+      message: 'Location is required',
+    })
+    .min(1, { message: 'Location field must be atleast 1 character long' })
+    .max(255, { message: 'Location field value too long' }),
   rehearsals: z.array(
     z.object({
       _id: z.any().optional(),

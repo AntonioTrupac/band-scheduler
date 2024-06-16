@@ -19,6 +19,9 @@ const config = {
       },
     },
     extend: {
+      screens: {
+        '5xl': '2000px',
+      },
       fontFamily: {
         sans: ['var(--font-sans)', ...fontFamily.sans],
       },

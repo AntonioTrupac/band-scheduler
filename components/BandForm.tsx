@@ -25,7 +25,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { CreateBandFormType, PickedZodCreateBandSchema } from '@/types/band';
 
 export const BandForm = ({ studioId }: { studioId: string }) => {
-  // const [bandNameError, setBandNameError] = useState<string | undefined>('');
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<CreateBandFormType>({
@@ -61,7 +60,6 @@ export const BandForm = ({ studioId }: { studioId: string }) => {
 
   const onSubmit = async (data: CreateBandFormType) => {
     console.log(data);
-
     const bands = await createBand({
       ...data,
       rehearsals: [],
@@ -78,8 +76,6 @@ export const BandForm = ({ studioId }: { studioId: string }) => {
     //   });
     // }
     if (!bands.success && Array.isArray(bands.errors)) {
-      console.log('WE IN HERE BRO');
-      // setBandNameError(bands.errors?.message);
       const bandNameError = bands.errors?.find(
         (error) => error.path.includes('name') && error.code === 'custom',
       );
@@ -91,8 +87,7 @@ export const BandForm = ({ studioId }: { studioId: string }) => {
         });
       }
     } else {
-      // setBandNameError('');
-      router.push(`studio/${studioId}/bands`);
+      router.replace(`/studio/${studioId}/bands`);
     }
     // console.log('band name error', bandNameError);
 

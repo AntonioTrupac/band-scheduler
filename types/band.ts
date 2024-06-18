@@ -41,27 +41,9 @@ export const ZodBandSchema = z.object({
 
 export type BandZodType = z.infer<typeof ZodBandSchema>;
 
-export type FetchBandsResponse = {
+export type Response<T> = {
   success: boolean;
-  data?: BandZodType[];
-  errors?: ZodIssue[];
-};
-
-export type CreateBandResponse = {
-  success: boolean;
-  data?: BandZodType;
-  errors?: ZodIssue[] | { message: string };
-};
-
-export type CreateOrUpdateResponse = {
-  success: boolean;
-  data?: BandZodType;
-  errors?: ZodIssue[] | { message: string };
-};
-
-export type UpdateBandResponse = {
-  success: boolean;
-  data?: BandZodType;
+  data?: T;
   errors?: ZodIssue[] | { message: string };
 };
 
@@ -120,3 +102,11 @@ export const PickedZodCreateBandSchema = ZodCreateBandSchema.pick({
 });
 
 export type CreateBandFormType = z.infer<typeof PickedZodCreateBandSchema>;
+
+export const PickedZodCreateScheduleSchema = ZodCreateBandSchema.pick({
+  rehearsal: true,
+});
+
+export type CreateScheduleFormType = z.infer<
+  typeof PickedZodCreateScheduleSchema
+>;

@@ -45,7 +45,7 @@ export default async function Home({ params }: { params: { _id: string } }) {
                 className: `px-4`,
               })}
               // Todo: proper href needed, also need to create schedule [id] page
-              href={`/studio/${params._id}/bands/create`}
+              href={`/studio/${params._id}/schedule/${band._id.toString()}`}
             >
               Create a schedule
             </Link>

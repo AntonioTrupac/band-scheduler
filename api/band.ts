@@ -1,7 +1,7 @@
 import 'server-only';
 import connectMongo from '@/lib/mongodb';
 import BandModel, { BandType } from '@/models/Band';
-import { FetchBandsResponse, ZodBandSchema } from '@/types/band';
+import { Response, BandZodType, ZodBandSchema } from '@/types/band';
 
 const convertObjectIdToString = (band: BandType) => {
   return {
@@ -12,7 +12,7 @@ const convertObjectIdToString = (band: BandType) => {
 
 export const fetchBands = async (
   studioId: string,
-): Promise<FetchBandsResponse> => {
+): Promise<Response<BandZodType[]>> => {
   await connectMongo();
   try {
     const bands = await BandModel.find({
@@ -21,7 +21,6 @@ export const fetchBands = async (
       location: { $exists: true },
       studioId,
     }).lean();
-    console.log(bands);
 
     const bandsWithStudioId = bands.map((band) => {
       return convertObjectIdToString(band);
@@ -36,6 +35,8 @@ export const fetchBands = async (
         errors: validateSchema.error.errors,
       };
     }
+
+    console.log('BANDS', validateSchema.data);
 
     return {
       success: true,

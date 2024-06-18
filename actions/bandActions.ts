@@ -1,20 +1,20 @@
 'use server';
 import connectMongo from '@/lib/mongodb';
 import {
-  BandFormType,
+  Response,
   BandZodType,
-  CreateBandResponse,
-  CreateOrUpdateResponse,
-  UpdateBandResponse,
   ZodBandSchema,
+  CreateScheduleFormType,
+  PickedZodCreateScheduleSchema,
 } from '@/types/band';
 import BandModel from '../models/Band';
 import StudioModel from '@/models/Studio';
 import { revalidateTag } from 'next/cache';
 
-const ifBandExists = async (bandName: string, studioId: string) => {
+// TODO: Instead of this unnecessary function, make name field unique
+const ifBandExists = async (name: string, studioId: string) => {
   const band = await BandModel.find({
-    name: bandName,
+    name,
     studioId,
   }).lean();
 
@@ -23,7 +23,7 @@ const ifBandExists = async (bandName: string, studioId: string) => {
 
 export const createBand = async (
   band: BandZodType,
-): Promise<CreateBandResponse> => {
+): Promise<Response<BandZodType>> => {
   await connectMongo();
   const validateBandSchema = ZodBandSchema.safeParse(band);
 
@@ -71,75 +71,110 @@ export const createBand = async (
   }
 };
 
-// export const updateBand = async (
-//   band: BandZodType,
-// ): Promise<UpdateBandResponse> => {
-//   await connectMongo();
-//   try {
-//     const validateBandSchema = ZodBandSchema.safeParse(band);
-
-//     if (!validateBandSchema.success) {
-//       return {
-//         success: false,
-//         errors: validateBandSchema.error.errors,
-//       };
-//     }
-
-//     const { _id, ...updateData } = band;
-//     if (!_id) {
-//       return {
-//         success: false,
-//         errors: { message: 'Band ID is required for update' },
-//       };
-//     }
-
-//     const updatedBand = await BandModel.findByIdAndUpdate(_id, updateData, {
-//       new: true,
-//     }).lean();
-
-//     console.log('updated band', updatedBand);
-
-//     if (!updatedBand) {
-//       return {
-//         success: false,
-//         errors: { message: 'Band not found' },
-//       };
-//     }
-
-//     return {
-//       success: true,
-//       data: {
-//         ...updatedBand,
-//         _id: updatedBand._id.toString(),
-//         rehearsals: updatedBand.rehearsals.map((rehearsal) => ({
-//           ...rehearsal,
-//           _id: rehearsal._id?.toString(),
-//         })),
-//       },
-//     };
-//   } catch (error) {
-//     console.error(error);
-//     throw new Error(error as any);
-//   }
-// };
-
-// const hasRehearsalConflict = (
-//   existingBand: BandZodType,
-//   rehearsal: BandFormType['rehearsal'],
+// const hasTimeslotConflict = (
+//   existingBands: BandZodType[],
+//   rehearsal: CreateScheduleFormType['rehearsal'],
 // ) => {
 //   const dateStart = new Date(rehearsal.start);
 //   const dateEnd = new Date(rehearsal.end);
 
-//   return existingBand.rehearsals.some((r) => {
-//     const rehearsalStart = new Date(r.start);
-//     const rehearsalEnd = new Date(r.end);
+//   return existingBands.map((band) => {
+//     return band.rehearsals.some((existingRehearsal) => {
+//       const existingStart = new Date(existingRehearsal.start);
+//       const existingEnd = new Date(existingRehearsal.end);
 
-//     return (
-//       (dateStart >= rehearsalStart && dateStart <= rehearsalEnd) ||
-//       (dateEnd >= rehearsalStart && dateEnd <= rehearsalEnd)
-//     );
+//       return (
+//         (dateStart >= existingStart && dateStart <= existingEnd) ||
+//         (dateEnd >= existingStart && dateEnd <= existingEnd)
+//       );
+//     });
 //   });
 // };
+
+export const createBandSchedule = async (
+  data: CreateScheduleFormType,
+  studioId: string,
+  bandId: string,
+) => {
+  await connectMongo();
+
+  const validateBandSchema = PickedZodCreateScheduleSchema.safeParse(data);
+  if (!validateBandSchema.success) {
+    return {
+      success: false,
+      errors: validateBandSchema.error.errors,
+    };
+  }
+
+  try {
+    const existingBands = await BandModel.find({
+      studioId,
+    }).lean();
+    console.log('EXISTING BANDS', existingBands);
+    // if (!existingBands) {
+    //   return {
+    //     success: false,
+    //     errors: { message: 'Band not found' },
+    //   };
+    // }
+
+    // const hasConflict = hasTimeslotConflict(existingBands, data.rehearsal);
+
+    // if (hasConflict) {
+    //   return {
+    //     success: false,
+    //     errors: { message: 'Rehearsal slot is already taken' },
+    //   };
+    // }
+
+    const band = await BandModel.findOneAndUpdate(
+      { _id: bandId, studioId },
+      {
+        $push: {
+          rehearsals: [
+            {
+              start: data.rehearsal.start,
+              end: data.rehearsal.end,
+              title: data.rehearsal.title,
+            },
+          ],
+        },
+      },
+      { new: true },
+    );
+
+    console.log('BAND', band);
+
+    if (!band) {
+      return {
+        success: false,
+        errors: { message: 'Band not found' },
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        _id: band._id?.toString(),
+        name: band.name,
+        location: band.location,
+        rehearsals: band.rehearsals.map((rehearsal) => ({
+          _id: rehearsal._id?.toString(),
+          start: rehearsal.start,
+          end: rehearsal.end,
+          title: rehearsal.title,
+        })),
+        studioId: band.studioId.toString(),
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      errors: { message: 'Failed to create band schedule' },
+    };
+  }
+};
 
 // export const createOrUpdateBand = async (
 //   band: BandZodType,
@@ -161,12 +196,12 @@ export const createBand = async (
 //       // timeslot logic
 //       const conflict = hasRehearsalConflict(existingBand, band.rehearsals[0]);
 
-//       if (conflict) {
-//         return {
-//           success: false,
-//           errors: { message: 'Rehearsal slot is already taken' },
-//         };
-//       }
+// if (conflict) {
+//   return {
+//     success: false,
+//     errors: { message: 'Rehearsal slot is already taken' },
+//   };
+// }
 
 //       const upsertResponse = await BandModel.findOneAndUpdate(
 //         band._id,

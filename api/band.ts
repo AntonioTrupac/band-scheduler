@@ -36,8 +36,6 @@ export const fetchBands = async (
       };
     }
 
-    console.log('BANDS', validateSchema.data);
-
     return {
       success: true,
       data: validateSchema.data.map((band) => {

@@ -71,25 +71,27 @@ export const createBand = async (
   }
 };
 
-// const hasTimeslotConflict = (
-//   existingBands: BandZodType[],
-//   rehearsal: CreateScheduleFormType['rehearsal'],
-// ) => {
-//   const dateStart = new Date(rehearsal.start);
-//   const dateEnd = new Date(rehearsal.end);
+const hasTimeslotConflict = (
+  existingBands: BandZodType[],
+  rehearsal: CreateScheduleFormType['rehearsal'],
+): boolean => {
+  const dateStart = new Date(rehearsal.start);
+  const dateEnd = new Date(rehearsal.end);
 
-//   return existingBands.map((band) => {
-//     return band.rehearsals.some((existingRehearsal) => {
-//       const existingStart = new Date(existingRehearsal.start);
-//       const existingEnd = new Date(existingRehearsal.end);
+  return existingBands.some((band) => {
+    return band.rehearsals.some((existingRehearsal) => {
+      const existingStart = new Date(existingRehearsal.start);
+      const existingEnd = new Date(existingRehearsal.end);
 
-//       return (
-//         (dateStart >= existingStart && dateStart <= existingEnd) ||
-//         (dateEnd >= existingStart && dateEnd <= existingEnd)
-//       );
-//     });
-//   });
-// };
+      return (
+        (dateStart >= existingStart && dateStart <= existingEnd) ||
+        (dateEnd >= existingStart && dateEnd <= existingEnd) ||
+        (existingStart >= dateStart && existingStart <= dateEnd) ||
+        (existingEnd >= dateStart && existingEnd <= dateEnd)
+      );
+    });
+  });
+};
 
 export const createBandSchedule = async (
   data: CreateScheduleFormType,
@@ -111,21 +113,21 @@ export const createBandSchedule = async (
       studioId,
     }).lean();
     console.log('EXISTING BANDS', existingBands);
-    // if (!existingBands) {
-    //   return {
-    //     success: false,
-    //     errors: { message: 'Band not found' },
-    //   };
-    // }
+    if (!existingBands) {
+      return {
+        success: false,
+        errors: { message: 'Band not found' },
+      };
+    }
 
-    // const hasConflict = hasTimeslotConflict(existingBands, data.rehearsal);
+    const hasConflict = hasTimeslotConflict(existingBands, data.rehearsal);
 
-    // if (hasConflict) {
-    //   return {
-    //     success: false,
-    //     errors: { message: 'Rehearsal slot is already taken' },
-    //   };
-    // }
+    if (hasConflict) {
+      return {
+        success: false,
+        errors: { message: 'Rehearsal slot is already taken' },
+      };
+    }
 
     const band = await BandModel.findOneAndUpdate(
       { _id: bandId, studioId },
@@ -142,8 +144,6 @@ export const createBandSchedule = async (
       },
       { new: true },
     );
-
-    console.log('BAND', band);
 
     if (!band) {
       return {

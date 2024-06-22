@@ -9,6 +9,7 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs';
+import { Toaster } from '@/components/ui/toaster';
 
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -63,6 +64,7 @@ export default function RootLayout({
             </nav>
           </header>
           {children}
+          <Toaster />
         </body>
       </ClerkProvider>
     </html>

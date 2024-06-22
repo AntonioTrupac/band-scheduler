@@ -33,6 +33,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { createBandSchedule } from '@/actions/bandActions';
 import { Button } from './ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 export const ScheduleForm = ({
   studioId,
@@ -41,6 +42,7 @@ export const ScheduleForm = ({
   studioId: string;
   bandId: string;
 }) => {
+  const { toast } = useToast();
   const form = useForm<CreateScheduleFormType>({
     resolver: zodResolver(PickedZodCreateScheduleSchema),
     defaultValues: {
@@ -56,9 +58,14 @@ export const ScheduleForm = ({
     console.log('STUFF IN FORM', data.rehearsal);
 
     const response = await createBandSchedule(data, studioId, bandId);
-    // console.log('RESOPONSE IN CLIENT', response);
-    if (!response.success) {
+
+    if (!response.success && !Array.isArray(response.errors)) {
       console.error(response.errors);
+      toast({
+        title: 'Error',
+        description: response.errors?.message,
+        variant: 'destructive',
+      });
       return;
     }
   };

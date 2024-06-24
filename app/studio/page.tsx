@@ -52,7 +52,7 @@ export default async function StudioPage() {
                   variant: 'default',
                   className: `w-full mr-4`,
                 })}
-                href={`/studio/${studio._id.toString()}/bands`}
+                href={`/studio/${studio._id.toString()}/`}
               >
                 View studio
               </Link>

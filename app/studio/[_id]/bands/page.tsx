@@ -1,9 +1,7 @@
 import { fetchBands } from '@/api/band';
-import { Button, buttonVariants } from '@/components/ui/button';
-// import { BandForm } from '@/components/BandForm';
+import { buttonVariants } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import Link from 'next/link';
-import { PlusIcon } from '@radix-ui/react-icons';
 
 export default async function Home({ params }: { params: { _id: string } }) {
   const bands = await fetchBands(params._id);

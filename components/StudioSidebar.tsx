@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { SidebarNav } from './SidebarNav';
 
 export const StudioSidebar = ({ _id }: { _id: string }) => {

@@ -1,4 +1,6 @@
 'use client';
+
+import { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
@@ -10,9 +12,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export const StudioSchedule = ({
   rehearsals,
@@ -21,6 +22,7 @@ export const StudioSchedule = ({
 }) => {
   const [openTimeslot, setOpenTimeslot] = useState(false);
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const handleDateClick = (arg: DateClickArg) => {
     console.log('CLICKING HERE');
@@ -50,6 +52,9 @@ export const StudioSchedule = ({
         nowIndicator
         editable
         navLinks
+        navLinkDayClick={(date, jsEvent) => {
+          router.push(`/studio/`);
+        }}
         // selectable={true}
         // selectMirror={true}
       />
@@ -79,7 +84,7 @@ export const StudioSchedule = ({
 
 const renderSchedule = (eventInfo: EventContentArg) => {
   return (
-    <div className="w-full">
+    <div className="w-full px-3">
       <p className="text-slate-800">{eventInfo.timeText}</p>
       <p className="text-gray-600 text-wrap">Band: {eventInfo.event.title}</p>
     </div>

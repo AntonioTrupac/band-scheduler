@@ -12,7 +12,6 @@ export const SidebarNav = ({ id }: { id: string }) => {
       document.documentElement.style.overflow = 'hidden';
     }
 
-    // Cleanup function to reset overflow style when component unmounts or path changes
     return () => {
       document.documentElement.style.overflow = '';
     };
@@ -20,10 +19,10 @@ export const SidebarNav = ({ id }: { id: string }) => {
 
   return (
     <ul className="flex flex-col h-full space-y-4 px-8">
-      <li>
+      <li className="mt-4">
         <Link href={`/studio/${id}`}>Schedule</Link>
       </li>
-      <li className="mt-4">
+      <li>
         <Link href={`/studio/${id}/bands`}>Bands</Link>
       </li>
     </ul>

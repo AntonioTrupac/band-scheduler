@@ -6,29 +6,59 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import { BandZodType } from '@/types/band';
 import { EventContentArg } from '@fullcalendar/core/index.js';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+
 import { useRouter } from 'next/navigation';
+import { ScheduleTimeslotModal } from './ScheduleTimeslotModal';
+import { UpdateOrDeleteTimeslotModal } from './UpdateOrDeleteTimeslotModal';
 
 export const StudioSchedule = ({
-  rehearsals,
+  bands,
+  studioId,
 }: {
-  rehearsals: BandZodType['rehearsals'];
+  bands: BandZodType[];
+  studioId: string;
 }) => {
+  // TODO: Refactor this shit component
   const [openTimeslot, setOpenTimeslot] = useState(false);
   const [open, setOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [rehStartDate, setRehStartDate] = useState<Date | null>(null);
   const router = useRouter();
 
+  /*
+    What if
+     = set start date in url ?startDate=blabla when clicking on the update modal
+     = when closing the modal remove the ?startDate=blabla
+
+    What if for selectedDate we do the same
+     = set it in the url like selectedDate=blabla, remove it from url when closing or submitting in
+       create schedule modal 
+
+
+    Maybe use useState({}) or try useReducer hook      
+  */
+
+  const rehearsals = bands
+    .filter((band) => {
+      return band.studioId === studioId;
+    })
+    .flatMap((band) => {
+      return band.rehearsals;
+    });
+
+  const bandNames = bands
+    .filter((band) => {
+      return band.studioId === studioId;
+    })
+    .map((band) => {
+      return band.name;
+    });
+
   const handleDateClick = (arg: DateClickArg) => {
-    console.log('CLICKING HERE');
+    setSelectedDate(arg.date);
     setOpenTimeslot(true);
-    // alert('Day', arg.dayEl.getAttribute('data-date'));
   };
+
   return (
     <div className="p-12 overflow-hidden">
       <FullCalendar
@@ -42,42 +72,42 @@ export const StudioSchedule = ({
         events={rehearsals}
         displayEventEnd={true}
         eventContent={renderSchedule}
-        eventClick={(info) => {
+        eventClick={(args) => {
+          setRehStartDate(args.event.start);
           setOpen(true);
         }}
         dateClick={handleDateClick}
-        // select={(info) => {
-        //   console.log(info);
-        // }}
         nowIndicator
         editable
         navLinks
+        // This will take us to a custom schedule day page
         navLinkDayClick={(date, jsEvent) => {
+          // Just for testing
           router.push(`/studio/`);
         }}
-        // selectable={true}
-        // selectMirror={true}
       />
 
-      <Dialog open={openTimeslot} onOpenChange={setOpenTimeslot}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Schedule a timeslot</DialogTitle>
-            <DialogDescription>
-              Schedule a timeslot for this band
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+      <ScheduleTimeslotModal
+        openTimeslot={openTimeslot}
+        handleOpenState={() => {
+          setOpenTimeslot(false);
+        }}
+      >
+        <ScheduleTimeslotModal.ScheduleInfo
+          bandNames={bandNames}
+          studioId={studioId}
+          date={selectedDate}
+        />
+      </ScheduleTimeslotModal>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Update timeslot</DialogTitle>
-            <DialogDescription>Lets update the timeslot</DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+      <UpdateOrDeleteTimeslotModal
+        openUpdateModal={open}
+        handleOpenUpdateModal={() => {
+          setOpen(false);
+        }}
+        bands={bands}
+        rehearsalStartDate={rehStartDate}
+      />
     </div>
   );
 };

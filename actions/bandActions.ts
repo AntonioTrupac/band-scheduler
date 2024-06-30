@@ -11,16 +11,6 @@ import BandModel from '../models/Band';
 import StudioModel from '@/models/Studio';
 import { revalidateTag } from 'next/cache';
 
-// TODO: Instead of this unnecessary function, make name field unique
-const ifBandExists = async (name: string, studioId: string) => {
-  const band = await BandModel.find({
-    name,
-    studioId,
-  }).lean();
-
-  return band.length > 0;
-};
-
 export const createBand = async (
   band: BandZodType,
 ): Promise<Response<BandZodType>> => {
@@ -35,21 +25,17 @@ export const createBand = async (
   }
 
   try {
-    const bandExists = await ifBandExists(
-      validateBandSchema.data.name,
-      validateBandSchema.data.studioId,
-    );
+    const existingBand = await BandModel.find({
+      name: validateBandSchema.data.name,
+      studioId: validateBandSchema.data.studioId,
+    }).lean();
 
-    if (bandExists) {
+    if (
+      hasTimeslotConflict(existingBand, validateBandSchema.data.rehearsals[0])
+    ) {
       return {
         success: false,
-        errors: [
-          {
-            path: ['name'],
-            message: 'Band name already exists',
-            code: 'custom',
-          },
-        ],
+        errors: { message: 'Rehearsal slot is already taken' },
       };
     }
 

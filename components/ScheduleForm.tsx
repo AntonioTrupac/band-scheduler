@@ -1,20 +1,5 @@
 'use client';
 
-/* 
-    TODO: add validation for rehearsal start and end
-    - start must be before end
-    - start must be in the future or current date with time
-
-    TODO: add validation for band name or id
-    - name must be unique
-    - name must be a string
-
-    TODO: check if band name already exists (via name or _id)
-    - if it exists add another rehearsal to the band/rehearsal array
-
-    TODO: If the timeslot is already taken, show an error message in the form screen
-  */
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -55,8 +40,6 @@ export const ScheduleForm = ({
   });
 
   const onSubmit = async (data: CreateScheduleFormType) => {
-    console.log('STUFF IN FORM', data.rehearsal);
-
     const response = await createBandSchedule(data, studioId, bandId);
 
     if (!response.success && !Array.isArray(response.errors)) {

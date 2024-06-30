@@ -8,19 +8,9 @@ export default async function Page({ params }: { params: { _id: string } }) {
     return <div>Failed to fetch bands</div>;
   }
 
-  const rehearsals = bands.data
-    .filter((band) => {
-      return band.studioId === params._id;
-    })
-    .flatMap((band) => {
-      return band.rehearsals;
-    });
-
-  console.log('rehearsals', rehearsals);
-
   return (
     <div className="max-w-full max-h-[calc(100vh-68px)] overflow-y-scroll">
-      <StudioSchedule rehearsals={rehearsals} />
+      <StudioSchedule bands={bands.data} studioId={params._id} />
     </div>
   );
 }

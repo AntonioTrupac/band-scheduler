@@ -16,6 +16,8 @@ const BandSchema: Schema = new Schema({
   name: {
     type: String,
     required: true,
+    unique: true,
+    dropDups: true,
   },
   location: {
     type: String,

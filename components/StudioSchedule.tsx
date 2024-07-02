@@ -25,19 +25,6 @@ export const StudioSchedule = ({
   const [rehStartDate, setRehStartDate] = useState<Date | null>(null);
   const router = useRouter();
 
-  /*
-    What if
-     = set start date in url ?startDate=blabla when clicking on the update modal
-     = when closing the modal remove the ?startDate=blabla
-
-    What if for selectedDate we do the same
-     = set it in the url like selectedDate=blabla, remove it from url when closing or submitting in
-       create schedule modal 
-
-
-    Maybe use useState({}) or try useReducer hook      
-  */
-
   const rehearsals = bands
     .filter((band) => {
       return band.studioId === studioId;
@@ -97,6 +84,9 @@ export const StudioSchedule = ({
           bandNames={bandNames}
           studioId={studioId}
           date={selectedDate}
+          handleOpenState={() => {
+            setOpenTimeslot(false);
+          }}
         />
       </ScheduleTimeslotModal>
 

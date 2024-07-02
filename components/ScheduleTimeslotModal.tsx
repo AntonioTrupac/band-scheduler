@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { CheckIcon } from '@radix-ui/react-icons';
-
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -69,10 +68,12 @@ const ScheduleInfo = ({
   bandNames,
   studioId,
   date,
+  handleOpenState,
 }: {
   bandNames: string[];
   studioId: string;
   date: Date;
+  handleOpenState: () => void;
 }) => {
   const { toast } = useToast();
   const form = useForm({
@@ -111,6 +112,7 @@ const ScheduleInfo = ({
       });
       return;
     }
+    handleOpenState();
   };
 
   const bandOptions = bandNames.map((bandName) => {
@@ -227,16 +229,16 @@ const ScheduleInfo = ({
               </FormItem>
             )}
           />
-
+          {/* <DialogClose asChild> */}
           <Button
             onClick={(e) => {
               e.stopPropagation();
             }}
-            type="submit"
             className="w-full"
           >
             Submit
           </Button>
+          {/* </DialogClose> */}
         </div>
       </form>
     </Form>

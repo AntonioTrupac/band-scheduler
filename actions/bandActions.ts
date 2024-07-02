@@ -162,64 +162,55 @@ export const createBandSchedule = async (
   }
 };
 
-// export const createOrUpdateBand = async (
-//   band: BandZodType,
-// ): Promise<CreateOrUpdateResponse> => {
-//   await connectMongo();
-//   try {
-//     const validateBandSchema = ZodBandSchema.safeParse(band);
+export const deleteSchedule = async (
+  bandId: string,
+  scheduleId: string,
+  studioId: string,
+): Promise<Response<never>> => {
+  await connectMongo();
+  // const validateBandSchema = ZodBandSchema.safeParse(band);
 
-//     if (!validateBandSchema.success) {
-//       return {
-//         success: false,
-//         errors: validateBandSchema.error.errors,
-//       };
-//     }
+  // if (!validateBandSchema.success) {
+  //   return {
+  //     success: false,
+  //     errors: validateBandSchema.error.errors,
+  //   };
+  // }
 
-//     const existingBand = await BandModel.findById(band._id).lean();
+  try {
+    // const response = await BandModel.deleteOne({
+    //   rehearsals: { _id: scheduleId },
+    //   studioId,
+    // });
 
-//     if (existingBand) {
-//       // timeslot logic
-//       const conflict = hasRehearsalConflict(existingBand, band.rehearsals[0]);
+    // if (!response.acknowledged) {
+    //   console.log('WE IN HERE BITCH');
 
-// if (conflict) {
-//   return {
-//     success: false,
-//     errors: { message: 'Rehearsal slot is already taken' },
-//   };
-// }
+    //   return {
+    //     success: false,
+    //     errors: { message: 'Band not found' },
+    //   };
+    // }
+    const band = await BandModel.findOneAndUpdate(
+      { _id: bandId },
+      { $pull: { rehearsals: { _id: scheduleId } } },
+      { safe: true, multi: false },
+    );
 
-//       const upsertResponse = await BandModel.findOneAndUpdate(
-//         band._id,
-//         validateBandSchema.data,
-//         {
-//           upsert: true,
-//           new: true,
-//         },
-//       );
+    console.log(band);
 
-//       return {
-//         success: true,
-//         data: {
-//           ...upsertResponse,
-//           _id: upsertResponse._id?.toString(),
-//           rehearsals: upsertResponse.rehearsals.map((rehearsal) => ({
-//             ...rehearsal,
-//             _id: rehearsal._id?.toString(),
-//           })),
-//         },
-//       };
-//     }
+    // console.log(response);
 
-//     return {
-//       success: false,
-//       errors: { message: 'Band not found' },
-//     };
-//   } catch (error) {
-//     console.error(error);
-//     return {
-//       success: false,
-//       errors: { message: 'Failed to create or update band' },
-//     };
-//   }
-// };
+    revalidateTag('studio');
+    console.log('WE IN HERE BITCH 2');
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      errors: { message: 'Failed to delete band schedule' },
+    };
+  }
+};

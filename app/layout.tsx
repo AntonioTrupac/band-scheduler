@@ -40,7 +40,7 @@ export default function RootLayout({
             fontSans.variable,
           )}
         >
-          <header className="flex justify-between items-center py-4 px-8 bg-slate-50">
+          <header className="flex justify-between items-center py-4 px-12">
             <h1 className="text-xl">Band Manager</h1>
             <nav className="flex items-center">
               <SignedIn>

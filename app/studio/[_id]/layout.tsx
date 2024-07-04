@@ -5,9 +5,9 @@ export default function StudioLayout({
   params,
 }: Readonly<{ children: React.ReactNode; params: { _id: string } }>) {
   return (
-    <section className="grid grid-cols-sidebar grid-rows-sidebar h-[calc(100vh-68px)]">
+    <section className="h-[calc(100vh-128px)]">
       <StudioSidebar _id={params._id} />
-      {children}
+      <div className="bg-gray-100">{children}</div>
     </section>
   );
 }

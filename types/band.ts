@@ -107,6 +107,4 @@ export const PickedZodCreateScheduleSchema = ZodCreateBandSchema.pick({
   rehearsal: true,
 });
 
-export type CreateScheduleFormType = z.infer<
-  typeof PickedZodCreateScheduleSchema
->;
+export type ScheduleFormType = z.infer<typeof PickedZodCreateScheduleSchema>;

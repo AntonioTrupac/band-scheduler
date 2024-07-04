@@ -2,8 +2,8 @@ import { SidebarNav } from './SidebarNav';
 
 export const StudioSidebar = ({ _id }: { _id: string }) => {
   return (
-    <aside className="max-w-[300px] bg-slate-50 border-t-[1px]">
+    <div className="border-t-[1px] border-b-[1px]">
       <SidebarNav id={_id} />
-    </aside>
+    </div>
   );
 };

@@ -11,10 +11,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { DateTimePicker } from './ui/datetime';
-import {
-  CreateScheduleFormType,
-  PickedZodCreateScheduleSchema,
-} from '@/types/band';
+import { ScheduleFormType, PickedZodCreateScheduleSchema } from '@/types/band';
 import { Input } from '@/components/ui/input';
 import { createBandSchedule } from '@/actions/bandActions';
 import { Button } from './ui/button';
@@ -28,7 +25,7 @@ export const ScheduleForm = ({
   bandId: string;
 }) => {
   const { toast } = useToast();
-  const form = useForm<CreateScheduleFormType>({
+  const form = useForm<ScheduleFormType>({
     resolver: zodResolver(PickedZodCreateScheduleSchema),
     defaultValues: {
       rehearsal: {
@@ -39,7 +36,7 @@ export const ScheduleForm = ({
     },
   });
 
-  const onSubmit = async (data: CreateScheduleFormType) => {
+  const onSubmit = async (data: ScheduleFormType) => {
     const response = await createBandSchedule(data, studioId, bandId);
 
     if (!response.success && !Array.isArray(response.errors)) {

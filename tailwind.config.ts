@@ -80,10 +80,10 @@ const config = {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       gridTemplateColumns: {
-        sidebar: '300px 1fr',
+        sidebar: 'auto',
       },
       gridTemplateRows: {
-        sidebar: 'auto',
+        sidebar: '1fr',
       },
     },
   },

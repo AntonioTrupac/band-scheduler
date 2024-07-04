@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { BandZodType } from '@/types/band';
+import { BandZodType, ZodCreateBandSchema } from '@/types/band';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
@@ -24,7 +24,9 @@ import {
 import { DateTimePicker } from './ui/datetime';
 // import { deleteSchedule } from '@/actions/bandActions';
 import { useParams } from 'next/navigation';
-import { deleteSchedule } from '@/actions/bandActions';
+import { deleteSchedule, updateTimeslot } from '@/actions/bandActions';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from './ui/use-toast';
 
 const findBandByRehersealStart = (
   bands: BandZodType[],
@@ -82,9 +84,9 @@ export const UpdateOrDeleteTimeslotModal = ({
 
 const TimeslotInfo = ({ band }: { band: BandZodType }) => {
   const params = useParams<{ _id: string }>();
-  console.log(params, band.rehearsals[0]._id);
+  const { toast } = useToast();
   const form = useForm({
-    // resolver: zodResolver(ZodCreateBandSchema),
+    resolver: zodResolver(ZodCreateBandSchema),
     defaultValues: {
       name: band.name,
       location: band.location,
@@ -95,17 +97,6 @@ const TimeslotInfo = ({ band }: { band: BandZodType }) => {
       },
     },
   });
-  // // TODO: probably best to import this from utils, maybe need for moment/luxon???? prolly not
-  // const formatDateTime = (date: Date) => {
-  //   return date.toLocaleString('en-US', {
-  //     weekday: 'short',
-  //     year: 'numeric',
-  //     month: 'long',
-  //     day: 'numeric',
-  //     hour: 'numeric',
-  //     minute: 'numeric',
-  //   });
-  // };
 
   return (
     <div>
@@ -131,11 +122,12 @@ const TimeslotInfo = ({ band }: { band: BandZodType }) => {
               control={form.control}
               name="location"
               render={({ field }) => (
-                <FormItem className="mt-4">
+                <FormItem>
                   <FormLabel>Location</FormLabel>
                   <FormControl>
                     <Input placeholder="Location" readOnly {...field} />
                   </FormControl>
+                  <FormDescription>This field is readonly</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -166,7 +158,7 @@ const TimeslotInfo = ({ band }: { band: BandZodType }) => {
             />
           </div>
 
-          <DialogFooter className="mt-4">
+          <DialogFooter className="mt-6">
             <div className="flex justify-between w-full">
               <Button
                 type="submit"
@@ -183,7 +175,23 @@ const TimeslotInfo = ({ band }: { band: BandZodType }) => {
               </Button>
               <Button
                 onClick={form.handleSubmit(async (data) => {
-                  console.log(data);
+                  // TODO: create a function for this and call it here
+                  const response = await updateTimeslot(
+                    band._id,
+                    band.rehearsals[0]._id,
+                    params._id,
+                    data.rehearsal,
+                  );
+
+                  if (!response.success && !Array.isArray(response.errors)) {
+                    console.error(response.errors);
+                    toast({
+                      title: 'Error',
+                      description: response.errors?.message,
+                      variant: 'destructive',
+                    });
+                    return;
+                  }
                 })}
                 type="submit"
               >

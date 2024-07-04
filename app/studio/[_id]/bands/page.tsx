@@ -11,7 +11,7 @@ export default async function Home({ params }: { params: { _id: string } }) {
   }
 
   return (
-    <main className="flex flex-col px-12 py-8">
+    <main className="flex flex-col min-h-[calc(100vh-128px)] px-12 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-xl">Band Rehearsal Scheduler</h1>
 

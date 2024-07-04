@@ -4,7 +4,7 @@ import {
   Response,
   BandZodType,
   ZodBandSchema,
-  CreateScheduleFormType,
+  ScheduleFormType,
   PickedZodCreateScheduleSchema,
 } from '@/types/band';
 import BandModel from '../models/Band';
@@ -59,7 +59,7 @@ export const createBand = async (
 
 const hasTimeslotConflict = (
   existingBands: BandZodType[],
-  rehearsal: CreateScheduleFormType['rehearsal'],
+  rehearsal: ScheduleFormType['rehearsal'],
 ): boolean => {
   const dateStart = new Date(rehearsal.start);
   const dateEnd = new Date(rehearsal.end);
@@ -80,7 +80,7 @@ const hasTimeslotConflict = (
 };
 
 export const createBandSchedule = async (
-  data: CreateScheduleFormType,
+  data: ScheduleFormType,
   studioId: string,
   bandId: string,
 ) => {
@@ -168,38 +168,19 @@ export const deleteSchedule = async (
   studioId: string,
 ): Promise<Response<never>> => {
   await connectMongo();
-  // const validateBandSchema = ZodBandSchema.safeParse(band);
-
-  // if (!validateBandSchema.success) {
-  //   return {
-  //     success: false,
-  //     errors: validateBandSchema.error.errors,
-  //   };
-  // }
-
   try {
-    // const response = await BandModel.deleteOne({
-    //   rehearsals: { _id: scheduleId },
-    //   studioId,
-    // });
-
-    // if (!response.acknowledged) {
-    //   console.log('WE IN HERE BITCH');
-
-    //   return {
-    //     success: false,
-    //     errors: { message: 'Band not found' },
-    //   };
-    // }
     const band = await BandModel.findOneAndUpdate(
-      { _id: bandId },
+      { _id: bandId, studioId },
       { $pull: { rehearsals: { _id: scheduleId } } },
       { safe: true, multi: false },
     );
 
-    console.log(band);
-
-    // console.log(response);
+    if (!band) {
+      return {
+        success: false,
+        errors: { message: 'Rehearsal slot not deleted' },
+      };
+    }
 
     revalidateTag('studio');
     console.log('WE IN HERE BITCH 2');
@@ -211,6 +192,89 @@ export const deleteSchedule = async (
     return {
       success: false,
       errors: { message: 'Failed to delete band schedule' },
+    };
+  }
+};
+
+// export const
+export const updateTimeslot = async (
+  bandId: string,
+  scheduleId: string,
+  studioId: string,
+  rehearsal: ScheduleFormType['rehearsal'],
+) => {
+  await connectMongo();
+
+  const validateRehearsalSchema =
+    PickedZodCreateScheduleSchema.safeParse(rehearsal);
+
+  if (!validateRehearsalSchema.success) {
+    return {
+      success: false,
+      errors: validateRehearsalSchema.error.errors,
+    };
+  }
+
+  try {
+    const existingBands = await BandModel.find({
+      studioId,
+    }).lean();
+
+    const hasConflict = hasTimeslotConflict(existingBands, rehearsal);
+
+    if (hasConflict) {
+      return {
+        success: false,
+        errors: { message: 'Rehearsal slot is already taken' },
+      };
+    }
+
+    const band = await BandModel.findOneAndUpdate(
+      {
+        _id: bandId,
+        studioId,
+        rehearsals: { $elemMatch: { _id: scheduleId } },
+      },
+      {
+        $set: {
+          'rehearsals.$.title': rehearsal.title,
+          'rehearsals.$.start': rehearsal.start,
+          'rehearsals.$.end': rehearsal.end,
+        },
+      },
+      {
+        new: true,
+      },
+    );
+
+    if (!band) {
+      return {
+        success: false,
+        errors: { message: 'Band not found' },
+      };
+    }
+    revalidateTag('studio');
+
+    return {
+      success: true,
+      data: {
+        _id: band._id?.toString(),
+        name: band.name,
+        location: band.location,
+        rehearsals: band.rehearsals.map((rehearsal) => ({
+          _id: rehearsal._id?.toString(),
+          start: rehearsal.start,
+          end: rehearsal.end,
+          title: rehearsal.title,
+        })),
+        studioId: band.studioId.toString(),
+      },
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      errors: { message: 'Failed to updaet band schedule' },
     };
   }
 };

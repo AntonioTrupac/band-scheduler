@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  height: 100%;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -73,6 +78,18 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.fc .fc-button-primary {
+  @apply bg-primary text-primary-foreground shadow hover:bg-primary/90;
+}
+
+.fc .fc-button:disabled {
+  @apply bg-primary text-primary-foreground shadow capitalize;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  @apply bg-white border-[1px] border-collapse;
 }
 
 .popover-content {

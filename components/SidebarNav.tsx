@@ -3,23 +3,12 @@
 import { CalendarIcon, PlayIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
 
 export const SidebarNav = ({ id }: { id: string }) => {
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (pathname === `/studio/${id}`) {
-      document.documentElement.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.documentElement.style.overflow = '';
-    };
-  });
-
   return (
-    <ul className="flex px-8">
+    <ul className="flex px-8 bg-white">
       <li>
         <Link
           href={`/studio/${id}`}

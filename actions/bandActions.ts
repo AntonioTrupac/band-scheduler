@@ -204,14 +204,15 @@ export const updateTimeslot = async (
   rehearsal: ScheduleFormType['rehearsal'],
 ) => {
   await connectMongo();
-
-  const validateRehearsalSchema =
-    PickedZodCreateScheduleSchema.safeParse(rehearsal);
+  const validateRehearsalSchema = PickedZodCreateScheduleSchema.safeParse({
+    rehearsal,
+  });
 
   if (!validateRehearsalSchema.success) {
     return {
       success: false,
-      errors: validateRehearsalSchema.error.errors,
+      // TODO: Check how to make this message make more sense
+      errors: { message: 'Something went wrong!' },
     };
   }
 
@@ -221,7 +222,6 @@ export const updateTimeslot = async (
     }).lean();
 
     const hasConflict = hasTimeslotConflict(existingBands, rehearsal);
-
     if (hasConflict) {
       return {
         success: false,

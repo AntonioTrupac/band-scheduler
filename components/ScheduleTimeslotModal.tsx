@@ -129,7 +129,7 @@ const ScheduleInfo = ({
             <FormItem className="flex flex-col mt-4">
               <FormLabel>Band Name</FormLabel>
               <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger className="mt-3">
+                <PopoverTrigger className="mt-3" asChild>
                   <Input
                     type="text"
                     className={cn(
@@ -139,6 +139,14 @@ const ScheduleInfo = ({
                     placeholder="Select or create a band"
                     value={field.value}
                     onChange={(e) => form.setValue('name', e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        setOpen(true);
+                      } else if (e.key === ' ') {
+                        e.stopPropagation();
+                      }
+                    }}
                     role="combobox"
                   />
                 </PopoverTrigger>

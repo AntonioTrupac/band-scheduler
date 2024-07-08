@@ -1,13 +1,19 @@
+import { getStudioById } from '@/api/studio';
 import { StudioSidebar } from '@/components/StudioSidebar';
+import { cache } from 'react';
 
-export default function StudioLayout({
+const getCachedStudio = cache(getStudioById);
+
+export default async function StudioLayout({
   children,
   params,
 }: Readonly<{ children: React.ReactNode; params: { _id: string } }>) {
+  const studio = await getCachedStudio(params._id);
+  console.log(studio);
   return (
     <section>
-      <StudioSidebar id={params._id} />
-      <div className="bg-gray-100 min-h-dvh">{children}</div>
+      <StudioSidebar id={params._id} studioName={studio.data?.name} />
+      <div className="bg-gray-50 min-h-dvh">{children}</div>
     </section>
   );
 }

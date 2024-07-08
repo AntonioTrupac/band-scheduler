@@ -28,7 +28,7 @@ export const ZodStudioSchema = z.object({
     })
     .min(1)
     .max(255),
-  bands: z.array(z.string().optional()),
+  bands: z.array(z.any().optional()),
 });
 export type StudioZodType = z.infer<typeof ZodStudioSchema>;
 

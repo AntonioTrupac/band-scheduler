@@ -59,7 +59,7 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
     <Popover>
       <PopoverTrigger asChild className="z-10">
         <Button
-          variant={'outline'}
+          variant="outline"
           className={cn(
             'w-[280px] justify-start text-left font-normal',
             !date && 'text-muted-foreground',

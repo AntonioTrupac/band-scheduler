@@ -30,7 +30,10 @@ export const StudioSchedule = ({
       return band.studioId === studioId;
     })
     .flatMap((band) => {
-      return band.rehearsals;
+      return band.rehearsals.map((rehearsal) => ({
+        ...rehearsal,
+        name: band.name,
+      }));
     });
 
   const bandNames = bands
@@ -104,9 +107,11 @@ export const StudioSchedule = ({
 
 const renderSchedule = (eventInfo: EventContentArg) => {
   return (
-    <div className="w-full px-3">
-      <p className="text-slate-800">{eventInfo.timeText}</p>
-      <p className="text-gray-600 text-wrap">Band: {eventInfo.event.title}</p>
+    <div className="w-full mx-3 px-2">
+      <p className="text-gray-600 text-xs text-balance">
+        {eventInfo.event.extendedProps.name}
+      </p>
+      <p className="text-blue-950 text-xs">{eventInfo.timeText}</p>
     </div>
   );
 };

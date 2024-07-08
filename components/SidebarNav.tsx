@@ -4,11 +4,17 @@ import { CalendarIcon, PlayIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export const SidebarNav = ({ id }: { id: string }) => {
+export const SidebarNav = ({
+  id,
+  studioName,
+}: {
+  id: string;
+  studioName?: string;
+}) => {
   const pathname = usePathname();
 
   return (
-    <ul className="flex px-8 bg-white">
+    <ul className="flex px-8">
       <li>
         <Link
           href={`/studio/${id}`}

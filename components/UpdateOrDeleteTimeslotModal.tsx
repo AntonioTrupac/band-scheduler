@@ -176,7 +176,6 @@ const TimeslotInfo = ({ band }: { band: BandZodType }) => {
 
               <Button
                 onClick={form.handleSubmit(async (data) => {
-                  console.log('data', data);
                   // TODO: create a function for this and call it here
                   const response = await updateTimeslot(
                     band._id,

@@ -98,7 +98,6 @@ export const createBandSchedule = async (
     const existingBands = await BandModel.find({
       studioId,
     }).lean();
-    console.log('EXISTING BANDS', existingBands);
     if (!existingBands) {
       return {
         success: false,
@@ -183,7 +182,6 @@ export const deleteSchedule = async (
     }
 
     revalidateTag('studio');
-    console.log('WE IN HERE BITCH 2');
     return {
       success: true,
     };
@@ -271,7 +269,6 @@ export const updateTimeslot = async (
       },
     };
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       errors: { message: 'Failed to updaet band schedule' },

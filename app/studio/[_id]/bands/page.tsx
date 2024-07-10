@@ -3,7 +3,11 @@ import { buttonVariants } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import Link from 'next/link';
 
-export default async function Home({ params }: { params: { _id: string } }) {
+export default async function BandsPage({
+  params,
+}: {
+  params: { _id: string };
+}) {
   const bands = await fetchBands(params._id);
 
   // TODO: handle this properly, could throw and all hell will break loose
@@ -12,9 +16,9 @@ export default async function Home({ params }: { params: { _id: string } }) {
   }
 
   return (
-    <main className="flex flex-col min-h-[calc(100vh-128px)] px-12 py-8">
+    <main className="flex flex-col min-h-[calc(100vh-128px)] bg-gray-50 px-12 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-xl">Band Rehearsal Scheduler</h1>
+        <h1 className="text-xl">List of registered bands</h1>
         <Link
           className={buttonVariants({
             variant: 'default',

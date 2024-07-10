@@ -34,7 +34,6 @@ export const BandForm = ({ studioId }: { studioId: string }) => {
   });
 
   const onSubmit = async (data: CreateBandFormType) => {
-    console.log(data);
     const bands = await createBand({
       ...data,
       rehearsals: [],

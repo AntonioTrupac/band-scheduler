@@ -1,7 +1,11 @@
 import { fetchBands } from '@/api/band';
 import { StudioSchedule } from '@/components/StudioSchedule';
 
-export default async function Page({ params }: { params: { _id: string } }) {
+export default async function SchedulePage({
+  params,
+}: {
+  params: { _id: string };
+}) {
   const bands = await fetchBands(params._id);
 
   if (!bands.success || !bands.data) {

@@ -1,19 +1,21 @@
 import { getStudioById } from '@/api/studio';
-import { StudioSidebar } from '@/components/StudioSidebar';
-import { cache } from 'react';
+import { StudioNavbar } from '@/components/StudioNavbar';
+import { unstable_cache as cache } from 'next/cache';
 
-const getCachedStudio = cache(getStudioById);
+const getCachedStudio = cache(getStudioById, ['studio'], {
+  tags: ['studio'],
+});
 
 export default async function StudioLayout({
   children,
   params,
 }: Readonly<{ children: React.ReactNode; params: { _id: string } }>) {
   const studio = await getCachedStudio(params._id);
-  console.log(studio);
+
   return (
     <section>
-      <StudioSidebar id={params._id} studioName={studio.data?.name} />
-      <div className="bg-gray-50 min-h-dvh">{children}</div>
+      <StudioNavbar id={params._id} studioName={studio.data?.name} />
+      {children}
     </section>
   );
 }

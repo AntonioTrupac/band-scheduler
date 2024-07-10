@@ -8,24 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import connectMongo from '@/lib/mongodb';
-import StudioModel from '@/models/Studio';
 import { buttonVariants } from '@/components/ui/button';
-
-const getStudios = async () => {
-  await connectMongo();
-  try {
-    const studios = await StudioModel.find({
-      name: { $exists: true },
-      location: { $exists: true },
-    }).lean();
-
-    return studios;
-  } catch (error) {
-    console.error(error);
-    throw new Error(error as any);
-  }
-};
+import { getStudios } from '@/api/studio';
 
 const getCachedStudios = cache(getStudios, ['studios'], {
   tags: ['studios'],

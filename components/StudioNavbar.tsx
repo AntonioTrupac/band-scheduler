@@ -1,6 +1,6 @@
-import { SidebarNav } from './SidebarNav';
+import { SubNavbar } from './SubNavbar';
 
-export const StudioSidebar = ({
+export const StudioNavbar = ({
   id,
   studioName,
 }: {
@@ -9,7 +9,7 @@ export const StudioSidebar = ({
 }) => {
   return (
     <div className="border-t-[1px] flex justify-between items-center w-full bg-white pr-12 border-b-[1px] sticky top-[68px] z-50">
-      <SidebarNav id={id} studioName={studioName} />
+      <SubNavbar id={id} studioName={studioName} />
       {/* TODO: for v2 introduce a popover by clicking on a studio name, should have settings and check out other studios links */}
       <div className="flex items-center gap-2">
         <p>Studio: </p>

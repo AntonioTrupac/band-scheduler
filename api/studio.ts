@@ -1,9 +1,11 @@
 'server-only';
 
+import connectMongo from '@/lib/mongodb';
 import StudioModel from '@/models/Studio';
 import { ZodStudioSchema } from '@/types/studio';
 
 export const getStudioById = async (studioId: string) => {
+  await connectMongo();
   try {
     const studio = await StudioModel.findById(studioId).lean();
 
@@ -13,11 +15,9 @@ export const getStudioById = async (studioId: string) => {
         errors: { message: 'Studio not found' },
       };
     }
-    console.log(studio);
     const validateStudioSchema = ZodStudioSchema.safeParse(studio);
 
     if (!validateStudioSchema.success) {
-      console.log(validateStudioSchema.error.errors);
       return {
         success: false,
         // TODO: Return the actual error message
@@ -31,6 +31,21 @@ export const getStudioById = async (studioId: string) => {
         name: studio.name,
       },
     };
+  } catch (error) {
+    console.error(error);
+    throw new Error(error as any);
+  }
+};
+
+export const getStudios = async () => {
+  await connectMongo();
+  try {
+    const studios = await StudioModel.find({
+      name: { $exists: true },
+      location: { $exists: true },
+    }).lean();
+
+    return studios;
   } catch (error) {
     console.error(error);
     throw new Error(error as any);

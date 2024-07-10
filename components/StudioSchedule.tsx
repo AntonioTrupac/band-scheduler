@@ -50,7 +50,7 @@ export const StudioSchedule = ({
   };
 
   return (
-    <div className="p-12 overflow-hidden">
+    <div className="p-12 overflow-hidden bg-gray-50 min-h-dvh">
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"

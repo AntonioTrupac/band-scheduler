@@ -1,19 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Inter as FontSans } from 'next/font/google';
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from '@/components/ui/toaster';
 
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
-import { buttonVariants } from '@/components/ui/button';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -40,29 +31,6 @@ export default function RootLayout({
             fontSans.variable,
           )}
         >
-          <header className="flex justify-between items-center py-4 px-12 sticky top-0 z-50 bg-white">
-            <h1 className="text-xl">Band Manager</h1>
-            <nav className="flex items-center">
-              <SignedIn>
-                <Link
-                  className={buttonVariants({
-                    variant: 'default',
-                    className: `w-full mr-4`,
-                  })}
-                  href="/studio/create"
-                >
-                  Create studio
-                </Link>
-                <UserButton afterSignOutUrl="/" />
-              </SignedIn>
-              <SignedOut>
-                <div className="flex gap-4">
-                  <SignUpButton forceRedirectUrl="/studio" />
-                  <SignInButton forceRedirectUrl="/studio" />
-                </div>
-              </SignedOut>
-            </nav>
-          </header>
           {children}
           <Toaster />
         </body>

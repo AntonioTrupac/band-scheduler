@@ -19,15 +19,22 @@ export default async function StudioPage() {
   const studios = await getCachedStudios();
 
   return (
-    <main className="flex flex-col p-8">
-      <h1 className="mb-8 text-xl">Studios</h1>
+    <main className="flex flex-col px-12 py-8 bg-gray-50 h-[calc(100dvh-68px)]">
+      <h1 className="mb-6 text-xl">Studio environments</h1>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         {studios.map((studio) => (
           <Card key={studio._id.toString()}>
             <CardHeader>
-              <CardTitle>{studio.name}</CardTitle>
-              <CardDescription>{studio.location}</CardDescription>
+              <div className="flex flex-col mb-2">
+                <span className="text-lg underline mb-1">Studio name</span>
+                <CardTitle className="">{studio.name}</CardTitle>
+              </div>
+
+              <div>
+                <span className="text-lg underline mb-1">Location</span>
+                <CardDescription>{studio.location}</CardDescription>
+              </div>
             </CardHeader>
 
             <CardFooter>
@@ -38,7 +45,7 @@ export default async function StudioPage() {
                 })}
                 href={`/studio/${studio._id.toString()}/`}
               >
-                View studio
+                View schedule
               </Link>
             </CardFooter>
           </Card>

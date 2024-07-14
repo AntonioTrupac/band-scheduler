@@ -37,7 +37,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { DateTimePicker } from './ui/datetime';
 import { BandFormType, ZodCreateBandSchema } from '@/types/band';
-import { createBand } from '@/actions/bandActions';
+import { createOrUpdateBand } from '@/actions/bandActions';
 import { useToast } from './ui/use-toast';
 
 export const ScheduleTimeslotModal = ({
@@ -91,7 +91,7 @@ const ScheduleInfo = ({
   const [open, setOpen] = useState(false);
 
   const onSubmit = async (data: BandFormType) => {
-    const response = await createBand({
+    const response = await createOrUpdateBand({
       ...data,
       rehearsals: [
         {
@@ -116,7 +116,7 @@ const ScheduleInfo = ({
   };
 
   const bandOptions = bandNames.map((bandName) => {
-    return { value: bandName.toLowerCase(), label: bandName };
+    return { value: bandName, label: bandName };
   });
 
   return (
@@ -237,7 +237,6 @@ const ScheduleInfo = ({
               </FormItem>
             )}
           />
-          {/* <DialogClose asChild> */}
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -246,7 +245,6 @@ const ScheduleInfo = ({
           >
             Submit
           </Button>
-          {/* </DialogClose> */}
         </div>
       </form>
     </Form>

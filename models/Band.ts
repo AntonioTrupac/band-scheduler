@@ -12,6 +12,8 @@ export type BandType = {
   studioId: string;
 } & Document;
 
+// TODO: Add BandType into new Schema
+
 const BandSchema: Schema = new Schema({
   name: {
     type: String,
@@ -45,6 +47,7 @@ const BandSchema: Schema = new Schema({
   },
 });
 
+// TODO: Remove as Model<BandType> from BandModel and fix types where needed in the app
 const BandModel: Model<BandType> =
   (models.Band as Model<BandType>) || model<BandType>('Band', BandSchema);
 

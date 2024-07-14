@@ -1,4 +1,7 @@
 'use server';
+
+import { revalidateTag } from 'next/cache';
+
 import connectMongo from '@/lib/mongodb';
 import {
   Response,
@@ -7,11 +10,93 @@ import {
   ScheduleFormType,
   PickedZodCreateScheduleSchema,
 } from '@/types/band';
-import BandModel from '../models/Band';
+import BandModel from '@/models/Band';
 import StudioModel from '@/models/Studio';
-import { revalidateTag } from 'next/cache';
+import { addMinutes, hasTimeslotConflict, subMinutes } from '@/lib/utils';
 
-export const createBand = async (
+// if band exists => update the fields other than the band
+// if band does not exist => create a new band with new schedule and add it to the studio
+
+const updateBandRehearsal = async (
+  bandId: string,
+  studioId: string,
+  rehearsal: ScheduleFormType['rehearsal'],
+) => {
+  const adjustedRehearsal = {
+    ...rehearsal,
+    start: subMinutes(rehearsal.start, 15),
+    end: addMinutes(rehearsal.end, 15),
+  };
+
+  const updateBand = await BandModel.findOneAndUpdate(
+    {
+      _id: bandId,
+      studioId,
+    },
+
+    {
+      $push: {
+        rehearsals: [adjustedRehearsal],
+      },
+    },
+  );
+
+  if (!updateBand) {
+    return {
+      success: false,
+      errors: { message: 'Failed to update band schedule' },
+    };
+  }
+
+  revalidateTag('studio');
+  return {
+    success: true,
+    // TODO: write a transform function to return the data in the correct format
+    data: {
+      _id: updateBand._id?.toString(),
+      name: updateBand.name,
+      location: updateBand.location,
+      rehearsals: updateBand.rehearsals.map((rehearsal) => ({
+        _id: rehearsal._id?.toString(),
+        start: rehearsal.start,
+        end: rehearsal.end,
+        title: rehearsal.title,
+      })),
+      studioId: updateBand.studioId.toString(),
+    },
+  };
+};
+
+const createBand = async (
+  band: BandZodType,
+): Promise<Response<BandZodType>> => {
+  const adjustedRehearsal = {
+    ...band.rehearsals[0],
+    start: subMinutes(band.rehearsals[0].start, 15),
+    end: addMinutes(band.rehearsals[0].end, 15),
+  };
+
+  const newBandData = {
+    ...band,
+    rehearsals: [adjustedRehearsal],
+  };
+
+  const newBand = new BandModel(newBandData);
+  await newBand.save();
+
+  await StudioModel.findByIdAndUpdate(band.studioId, {
+    $push: { bands: newBand._id },
+  });
+
+  revalidateTag('studio');
+
+  return {
+    success: true,
+    data: newBandData,
+  };
+};
+
+export const createOrUpdateBand = async (
   band: BandZodType,
 ): Promise<Response<BandZodType>> => {
   await connectMongo();
@@ -23,7 +108,6 @@ export const createBand = async (
       errors: validateBandSchema.error.errors,
     };
   }
-
   try {
     const existingBand = await BandModel.find({
       name: validateBandSchema.data.name,
@@ -39,44 +123,19 @@ export const createBand = async (
       };
     }
 
-    const newBand = new BandModel(validateBandSchema.data);
-    await newBand.save();
-
-    await StudioModel.findByIdAndUpdate(validateBandSchema.data.studioId, {
-      $push: { bands: newBand._id },
-    });
-
-    revalidateTag('studio');
-    return {
-      success: true,
-      data: band,
-    };
+    if (existingBand.length > 0) {
+      return await updateBandRehearsal(
+        existingBand[0]._id.toString(),
+        validateBandSchema.data.studioId,
+        validateBandSchema.data.rehearsals[0],
+      );
+    } else {
+      return await createBand(validateBandSchema.data);
+    }
   } catch (error) {
     console.error(error);
     throw new Error(error as any);
   }
-};
-
-const hasTimeslotConflict = (
-  existingBands: BandZodType[],
-  rehearsal: ScheduleFormType['rehearsal'],
-): boolean => {
-  const dateStart = new Date(rehearsal.start);
-  const dateEnd = new Date(rehearsal.end);
-
-  return existingBands.some((band) => {
-    return band.rehearsals.some((existingRehearsal) => {
-      const existingStart = new Date(existingRehearsal.start);
-      const existingEnd = new Date(existingRehearsal.end);
-
-      return (
-        (dateStart >= existingStart && dateStart <= existingEnd) ||
-        (dateEnd >= existingStart && dateEnd <= existingEnd) ||
-        (existingStart >= dateStart && existingStart <= dateEnd) ||
-        (existingEnd >= dateStart && existingEnd <= dateEnd)
-      );
-    });
-  });
 };
 
 export const createBandSchedule = async (
@@ -114,21 +173,25 @@ export const createBandSchedule = async (
       };
     }
 
+    const adjustedRehearsal = {
+      ...data.rehearsal,
+      start: subMinutes(new Date(data.rehearsal.start), 15),
+      end: addMinutes(new Date(data.rehearsal.end), 15),
+    };
+
+    console.log('adjustedRehearsal', adjustedRehearsal);
+
     const band = await BandModel.findOneAndUpdate(
       { _id: bandId, studioId },
       {
         $push: {
-          rehearsals: [
-            {
-              start: data.rehearsal.start,
-              end: data.rehearsal.end,
-              title: data.rehearsal.title,
-            },
-          ],
+          rehearsals: [adjustedRehearsal],
         },
       },
       { new: true },
     );
+
+    console.log('band', band);
 
     if (!band) {
       return {

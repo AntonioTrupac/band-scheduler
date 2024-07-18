@@ -1,5 +1,7 @@
 import { fetchBands } from '@/api/band';
 import { StudioSchedule } from '@/components/StudioSchedule';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Suspense } from 'react';
 
 export default async function SchedulePage({
   params,
@@ -12,5 +14,13 @@ export default async function SchedulePage({
     return <div>Failed to fetch bands</div>;
   }
 
-  return <StudioSchedule bands={bands.data} studioId={params._id} />;
+  return (
+    <Suspense
+      fallback={
+        <LoadingSpinner className=" text-black absolute top-[50%] left-[50%]" />
+      }
+    >
+      <StudioSchedule bands={bands.data} studioId={params._id} />
+    </Suspense>
+  );
 }

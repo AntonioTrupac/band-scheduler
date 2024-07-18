@@ -45,9 +45,28 @@ export const getStudios = async () => {
       location: { $exists: true },
     }).lean();
 
-    return studios;
+    if (studios.length < 1) {
+      return {
+        success: false,
+        errors: { message: 'No studios found' },
+      };
+    }
+
+    return {
+      success: true,
+      data: studios.map((studio) => {
+        return {
+          _id: studio._id.toString(),
+          name: studio.name,
+          location: studio.location,
+        };
+      }),
+    };
   } catch (error) {
     console.error(error);
-    throw new Error(error as any);
+    return {
+      success: false,
+      errors: { message: 'Failed to fetch studios' },
+    };
   }
 };

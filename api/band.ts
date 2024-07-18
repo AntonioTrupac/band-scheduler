@@ -55,6 +55,9 @@ export const fetchBands = async (
     };
   } catch (error) {
     console.error(error);
-    throw new Error(error as any);
+    return {
+      success: false,
+      errors: { message: 'Failed to fetch bands' },
+    };
   }
 };

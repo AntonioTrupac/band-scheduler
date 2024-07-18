@@ -18,12 +18,16 @@ const getCachedStudios = cache(getStudios, ['studios'], {
 export default async function StudioPage() {
   const studios = await getCachedStudios();
 
+  if (!studios.data || !studios.success) {
+    return <div>Failed to fetch studios</div>;
+  }
+
   return (
     <main className="flex flex-col px-12 py-8 bg-gray-50 h-[calc(100dvh-68px)]">
       <h1 className="mb-6 text-xl">Studio environments</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-        {studios.map((studio) => (
+        {studios.data.map((studio) => (
           <Card key={studio._id.toString()}>
             <CardHeader>
               <div className="flex flex-col mb-2">

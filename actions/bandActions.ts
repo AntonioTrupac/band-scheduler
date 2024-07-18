@@ -19,13 +19,38 @@ import {
   subMinutes,
 } from '@/lib/utils';
 
-// if band exists => update the fields other than the band
-// if band does not exist => create a new band with new schedule and add it to the studio
+const addWeeks = (date: Date, weeks: number) => {
+  const newDate = new Date(date.getTime());
+  newDate.setDate(date.getDate() + weeks * 7);
+
+  return newDate;
+};
+
+const createRehearsals = (
+  rehearsal: ScheduleFormType['rehearsal'],
+  weeks: number,
+) => {
+  const rehearsals = [];
+
+  for (let i = 0; i < weeks; i++) {
+    const start = addWeeks(rehearsal.start, i);
+    const end = addWeeks(rehearsal.end, i);
+
+    rehearsals.push({
+      ...rehearsal,
+      start: subMinutes(start, 15),
+      end: addMinutes(end, 15),
+    });
+  }
+
+  return rehearsals;
+};
 
 const updateBandRehearsal = async (
   bandId: string,
   studioId: string,
   rehearsal: ScheduleFormType['rehearsal'],
+  repeatWeeks: number,
 ) => {
   if (!isStartBeforeEnd(rehearsal.start, rehearsal.end)) {
     return {
@@ -34,11 +59,7 @@ const updateBandRehearsal = async (
     };
   }
 
-  const adjustedRehearsal = {
-    ...rehearsal,
-    start: subMinutes(rehearsal.start, 15),
-    end: addMinutes(rehearsal.end, 15),
-  };
+  const rehearsals = createRehearsals(rehearsal, repeatWeeks);
 
   const updateBand = await BandModel.findOneAndUpdate(
     {
@@ -48,7 +69,7 @@ const updateBandRehearsal = async (
 
     {
       $push: {
-        rehearsals: [adjustedRehearsal],
+        rehearsals: { $each: rehearsals },
       },
     },
   );
@@ -81,6 +102,7 @@ const updateBandRehearsal = async (
 
 const createBand = async (
   band: BandZodType,
+  repeatWeeks: number,
 ): Promise<Response<BandZodType>> => {
   if (!isStartBeforeEnd(band.rehearsals[0].start, band.rehearsals[0].end)) {
     return {
@@ -89,15 +111,11 @@ const createBand = async (
     };
   }
 
-  const adjustedRehearsal = {
-    ...band.rehearsals[0],
-    start: subMinutes(band.rehearsals[0].start, 15),
-    end: addMinutes(band.rehearsals[0].end, 15),
-  };
+  const rehearsals = createRehearsals(band.rehearsals[0], repeatWeeks);
 
   const newBandData = {
     ...band,
-    rehearsals: [adjustedRehearsal],
+    rehearsals,
   };
 
   const newBand = new BandModel(newBandData);
@@ -116,6 +134,7 @@ const createBand = async (
 
 export const createOrUpdateBand = async (
   band: BandZodType,
+  repeatWeeks: number,
 ): Promise<Response<BandZodType>> => {
   await connectMongo();
   const validateBandSchema = ZodBandSchema.safeParse(band);
@@ -146,9 +165,10 @@ export const createOrUpdateBand = async (
         existingBand[0]._id.toString(),
         validateBandSchema.data.studioId,
         validateBandSchema.data.rehearsals[0],
+        repeatWeeks,
       );
     } else {
-      return await createBand(validateBandSchema.data);
+      return await createBand(validateBandSchema.data, repeatWeeks);
     }
   } catch (error) {
     console.error(error);

@@ -94,7 +94,18 @@ export const ZodCreateBandSchema = z.object({
     }),
 });
 
-export type BandFormType = z.infer<typeof ZodCreateBandSchema>;
+const ZodWeekSchema = z.object({
+  week: z.number().max(12, { message: 'Week must be between 0 and 12' }),
+});
+
+export const ZodCreateScheduleSchema = z.intersection(
+  ZodCreateBandSchema,
+  ZodWeekSchema,
+);
+
+export type BandFormType = z.infer<
+  typeof ZodCreateBandSchema & typeof ZodWeekSchema
+>;
 
 export const PickedZodCreateBandSchema = ZodCreateBandSchema.pick({
   name: true,

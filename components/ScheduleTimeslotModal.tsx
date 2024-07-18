@@ -36,9 +36,20 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { DateTimePicker } from './ui/datetime';
-import { BandFormType, ZodCreateBandSchema } from '@/types/band';
+import {
+  BandFormType,
+  ZodCreateBandSchema,
+  ZodCreateScheduleSchema,
+} from '@/types/band';
 import { createOrUpdateBand } from '@/actions/bandActions';
 import { useToast } from './ui/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 
 export const ScheduleTimeslotModal = ({
   children,
@@ -77,7 +88,7 @@ const ScheduleInfo = ({
 }) => {
   const { toast } = useToast();
   const form = useForm({
-    resolver: zodResolver(ZodCreateBandSchema),
+    resolver: zodResolver(ZodCreateScheduleSchema),
     defaultValues: {
       name: '',
       location: '',
@@ -86,22 +97,26 @@ const ScheduleInfo = ({
         start: new Date(date),
         end: new Date(date),
       },
+      week: 0,
     },
   });
   const [open, setOpen] = useState(false);
 
   const onSubmit = async (data: BandFormType) => {
-    const response = await createOrUpdateBand({
-      ...data,
-      rehearsals: [
-        {
-          start: data.rehearsal.start,
-          end: data.rehearsal.end,
-          title: data.rehearsal.title,
-        },
-      ],
-      studioId,
-    });
+    const response = await createOrUpdateBand(
+      {
+        ...data,
+        rehearsals: [
+          {
+            start: data.rehearsal.start,
+            end: data.rehearsal.end,
+            title: data.rehearsal.title,
+          },
+        ],
+        studioId,
+      },
+      data.week,
+    );
 
     if (!response.success && !Array.isArray(response.errors)) {
       console.error(response.errors);
@@ -237,6 +252,34 @@ const ScheduleInfo = ({
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="week"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Week</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={(value) => field.onChange(parseInt(value))}
+                    value={field.value.toString()}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Do not repeat" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Do not repeat</SelectItem>
+                      <SelectItem value="4">4 weeks</SelectItem>
+                      <SelectItem value="8">8 weeks</SelectItem>
+                      <SelectItem value="12">12 weeks</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <Button
             onClick={(e) => {
               e.stopPropagation();

@@ -12,7 +12,12 @@ import {
 } from '@/types/band';
 import BandModel from '@/models/Band';
 import StudioModel from '@/models/Studio';
-import { addMinutes, hasTimeslotConflict, subMinutes } from '@/lib/utils';
+import {
+  addMinutes,
+  hasTimeslotConflict,
+  isStartBeforeEnd,
+  subMinutes,
+} from '@/lib/utils';
 
 // if band exists => update the fields other than the band
 // if band does not exist => create a new band with new schedule and add it to the studio
@@ -22,6 +27,13 @@ const updateBandRehearsal = async (
   studioId: string,
   rehearsal: ScheduleFormType['rehearsal'],
 ) => {
+  if (!isStartBeforeEnd(rehearsal.start, rehearsal.end)) {
+    return {
+      success: false,
+      errors: { message: 'Start time should be before end time' },
+    };
+  }
+
   const adjustedRehearsal = {
     ...rehearsal,
     start: subMinutes(rehearsal.start, 15),
@@ -70,6 +82,13 @@ const updateBandRehearsal = async (
 const createBand = async (
   band: BandZodType,
 ): Promise<Response<BandZodType>> => {
+  if (!isStartBeforeEnd(band.rehearsals[0].start, band.rehearsals[0].end)) {
+    return {
+      success: false,
+      errors: { message: 'Start time should be before end time' },
+    };
+  }
+
   const adjustedRehearsal = {
     ...band.rehearsals[0],
     start: subMinutes(band.rehearsals[0].start, 15),
@@ -89,7 +108,6 @@ const createBand = async (
   });
 
   revalidateTag('studio');
-
   return {
     success: true,
     data: newBandData,
@@ -150,6 +168,18 @@ export const createBandSchedule = async (
     return {
       success: false,
       errors: validateBandSchema.error.errors,
+    };
+  }
+
+  if (
+    !isStartBeforeEnd(
+      validateBandSchema.data.rehearsal.start,
+      validateBandSchema.data.rehearsal.end,
+    )
+  ) {
+    return {
+      success: false,
+      errors: { message: 'Start time should be before end time' },
     };
   }
 
@@ -274,6 +304,18 @@ export const updateTimeslot = async (
       success: false,
       // TODO: Check how to make this message make more sense
       errors: { message: 'Something went wrong!' },
+    };
+  }
+
+  if (
+    !isStartBeforeEnd(
+      validateRehearsalSchema.data.rehearsal.start,
+      validateRehearsalSchema.data.rehearsal.end,
+    )
+  ) {
+    return {
+      success: false,
+      errors: { message: 'Start time should be before end time' },
     };
   }
 

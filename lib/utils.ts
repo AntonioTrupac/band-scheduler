@@ -41,3 +41,7 @@ export const hasTimeslotConflict = (
     });
   });
 };
+
+export const isStartBeforeEnd = (start: Date | string, end: Date | string) => {
+  return new Date(start) < new Date(end);
+};

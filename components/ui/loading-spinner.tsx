@@ -5,9 +5,9 @@ export const LoadingSpinner = ({ className }: { className?: string }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="32"
-      height="32"
-      viewBox="0 0 32 32"
+      width="70"
+      height="70"
+      viewBox="0 0 70 70"
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
@@ -15,7 +15,7 @@ export const LoadingSpinner = ({ className }: { className?: string }) => {
       strokeLinejoin="round"
       className={cn('animate-spin', className)}
     >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" transform="scale(2.5)" />
     </svg>
   );
 };

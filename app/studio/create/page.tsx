@@ -2,10 +2,10 @@ import { StudioForm } from '@/components/StudioForm';
 
 export default function CreateStudioPage() {
   return (
-    <main className="flex flex-col px-12 py-8">
+    <main className="flex flex-col px-12 py-8 bg-gray-50 h-[calc(100dvh-68px)]">
       <h1 className="mb-8 text-xl">Create a studio</h1>
 
-      <StudioForm />
+      {/* <StudioForm /> */}
     </main>
   );
 }

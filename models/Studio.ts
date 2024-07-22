@@ -11,6 +11,8 @@ const StudioSchema: Schema = new Schema({
   name: {
     type: String,
     required: true,
+    unique: true,
+    dropDups: true,
   },
   location: {
     type: String,
@@ -25,7 +27,3 @@ const StudioModel: Model<StudioType> =
   model<StudioType>('Studio', StudioSchema);
 
 export default StudioModel;
-
-// studio => bands
-
-// create a band => add that band into a studio bands field/property

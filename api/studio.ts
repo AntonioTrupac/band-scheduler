@@ -20,7 +20,6 @@ export const getStudioById = async (studioId: string) => {
     if (!validateStudioSchema.success) {
       return {
         success: false,
-        // TODO: Return the actual error message
         errors: { message: 'Invalid studio data' },
       };
     }

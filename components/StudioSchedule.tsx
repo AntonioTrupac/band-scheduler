@@ -11,6 +11,13 @@ import { useRouter } from 'next/navigation';
 import { ScheduleTimeslotModal } from './ScheduleTimeslotModal';
 import { UpdateOrDeleteTimeslotModal } from './UpdateOrDeleteTimeslotModal';
 
+const adjustToLocalTime = (date: Date) => {
+  const timezoneOffset = date.getTimezoneOffset() * 60000;
+  const localTime = new Date(date.getTime() - timezoneOffset);
+
+  return localTime;
+};
+
 export const StudioSchedule = ({
   bands,
   studioId,
@@ -25,6 +32,7 @@ export const StudioSchedule = ({
   const [rehStartDate, setRehStartDate] = useState<Date | null>(null);
   const router = useRouter();
 
+  // create a hook and return these 2 values from there
   const rehearsals = bands
     .filter((band) => {
       return band.studioId === studioId;
@@ -72,8 +80,12 @@ export const StudioSchedule = ({
         navLinks
         // This will take us to a custom schedule day page
         navLinkDayClick={(date, jsEvent) => {
-          // Just for testing
-          router.push(`/studio/`);
+          console.log('data', date, jsEvent);
+
+          const dateString = adjustToLocalTime(date)
+            .toISOString()
+            .split('T')[0];
+          router.push(`/studio/${studioId}/${dateString}/`);
         }}
       />
 

@@ -66,7 +66,6 @@ export const fetchBands = async (
 export const getBandsByDate = async (studioId: string, date: string) => {
   await connectMongo();
   try {
-    console.log(date);
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
 

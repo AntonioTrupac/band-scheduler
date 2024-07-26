@@ -32,15 +32,24 @@ const createRehearsals = (
 ) => {
   const rehearsals = [];
 
-  for (let i = 0; i < weeks; i++) {
-    const start = addWeeks(rehearsal.start, i);
-    const end = addWeeks(rehearsal.end, i);
-
+  // this means that 'do not repeat' is selected
+  if (weeks === 0) {
     rehearsals.push({
       ...rehearsal,
-      start: subMinutes(start, 15),
-      end: addMinutes(end, 15),
+      start: subMinutes(rehearsal.start, 15),
+      end: addMinutes(rehearsal.end, 15),
     });
+  } else {
+    for (let i = 0; i < weeks; i++) {
+      const start = addWeeks(rehearsal.start, i);
+      const end = addWeeks(rehearsal.end, i);
+
+      rehearsals.push({
+        ...rehearsal,
+        start: subMinutes(start, 15),
+        end: addMinutes(end, 15),
+      });
+    }
   }
 
   return rehearsals;
@@ -60,7 +69,7 @@ const updateBandRehearsal = async (
   }
 
   const rehearsals = createRehearsals(rehearsal, repeatWeeks);
-
+  console.log('rehearsals in updatBandRehersal', rehearsals);
   const updateBand = await BandModel.findOneAndUpdate(
     {
       _id: bandId,
@@ -73,6 +82,8 @@ const updateBandRehearsal = async (
       },
     },
   );
+
+  console.log('updateBand', updateBand);
 
   if (!updateBand) {
     return {
@@ -138,13 +149,14 @@ export const createOrUpdateBand = async (
 ): Promise<Response<BandZodType>> => {
   await connectMongo();
   const validateBandSchema = ZodBandSchema.safeParse(band);
-
+  console.log('validateBandSchema', validateBandSchema);
   if (!validateBandSchema.success) {
     return {
       success: false,
       errors: validateBandSchema.error.errors,
     };
   }
+
   try {
     const existingBand = await BandModel.find({
       name: validateBandSchema.data.name,

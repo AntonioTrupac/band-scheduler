@@ -10,13 +10,9 @@ import { EventContentArg } from '@fullcalendar/core/index.js';
 import { useRouter } from 'next/navigation';
 import { ScheduleTimeslotModal } from './ScheduleTimeslotModal';
 import { UpdateOrDeleteTimeslotModal } from './UpdateOrDeleteTimeslotModal';
-
-const adjustToLocalTime = (date: Date) => {
-  const timezoneOffset = date.getTimezoneOffset() * 60000;
-  const localTime = new Date(date.getTime() - timezoneOffset);
-
-  return localTime;
-};
+import { useBand } from '@/hooks/use-band';
+import { adjustToLocalTime } from '@/lib/utils';
+import { useStudioSchedule } from '@/hooks/use-studio-schedule';
 
 export const StudioSchedule = ({
   bands,
@@ -25,37 +21,23 @@ export const StudioSchedule = ({
   bands: BandZodType[];
   studioId: string;
 }) => {
-  // TODO: Refactor this shit component
-  const [openTimeslot, setOpenTimeslot] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [rehStartDate, setRehStartDate] = useState<Date | null>(null);
   const router = useRouter();
+  const { getRehearsals, getBandNames } = useBand();
+  const {
+    isCreateModalOpen,
+    isUpdateModalOpen,
+    selectedDate,
+    rehearsalStartDate,
+    openTimeslotModal,
+    openUpdateModal,
+    closeTimeslotModal,
+    closeUpdateModal,
+  } = useStudioSchedule();
 
-  // create a hook and return these 2 values from there
-  const rehearsals = bands
-    .filter((band) => {
-      return band.studioId === studioId;
-    })
-    .flatMap((band) => {
-      return band.rehearsals.map((rehearsal) => ({
-        ...rehearsal,
-        name: band.name,
-      }));
-    });
+  const rehearsals = getRehearsals(bands, studioId);
+  const bandNames = getBandNames(bands, studioId);
 
-  const bandNames = bands
-    .filter((band) => {
-      return band.studioId === studioId;
-    })
-    .map((band) => {
-      return band.name;
-    });
-
-  const handleDateClick = (arg: DateClickArg) => {
-    setSelectedDate(arg.date);
-    setOpenTimeslot(true);
-  };
+  const handleDateClick = (arg: DateClickArg) => openTimeslotModal(arg.date);
 
   return (
     <div className="p-12 overflow-hidden bg-gray-50 min-h-dvh">
@@ -70,18 +52,13 @@ export const StudioSchedule = ({
         events={rehearsals}
         displayEventEnd={true}
         eventContent={renderSchedule}
-        eventClick={(args) => {
-          setRehStartDate(args.event.start);
-          setOpen(true);
-        }}
+        eventClick={(args) => openUpdateModal(args.event.start)}
         dateClick={handleDateClick}
         nowIndicator
         editable
         navLinks
         // This will take us to a custom schedule day page
-        navLinkDayClick={(date, jsEvent) => {
-          console.log('data', date, jsEvent);
-
+        navLinkDayClick={(date) => {
           const dateString = adjustToLocalTime(date)
             .toISOString()
             .split('T')[0];
@@ -90,28 +67,22 @@ export const StudioSchedule = ({
       />
 
       <ScheduleTimeslotModal
-        openTimeslot={openTimeslot}
-        handleOpenState={() => {
-          setOpenTimeslot(false);
-        }}
+        openTimeslot={isCreateModalOpen}
+        handleOpenState={closeTimeslotModal}
       >
         <ScheduleTimeslotModal.ScheduleInfo
           bandNames={bandNames}
           studioId={studioId}
           date={selectedDate}
-          handleOpenState={() => {
-            setOpenTimeslot(false);
-          }}
+          handleOpenState={closeTimeslotModal}
         />
       </ScheduleTimeslotModal>
 
       <UpdateOrDeleteTimeslotModal
-        openUpdateModal={open}
-        handleOpenUpdateModal={() => {
-          setOpen(false);
-        }}
+        openUpdateModal={isUpdateModalOpen}
+        handleOpenUpdateModal={closeUpdateModal}
         bands={bands}
-        rehearsalStartDate={rehStartDate}
+        rehearsalStartDate={rehearsalStartDate}
       />
     </div>
   );

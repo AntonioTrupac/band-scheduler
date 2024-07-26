@@ -45,3 +45,10 @@ export const hasTimeslotConflict = (
 export const isStartBeforeEnd = (start: Date | string, end: Date | string) => {
   return new Date(start) < new Date(end);
 };
+
+export const adjustToLocalTime = (date: Date) => {
+  const timezoneOffset = date.getTimezoneOffset() * 60000;
+  const localTime = new Date(date.getTime() - timezoneOffset);
+
+  return localTime;
+};

@@ -30,7 +30,7 @@ export const DatePickerTimeInput = ({
       render={({ field }) => (
         <FormItem className="flex flex-col">
           <FormLabel>{label}</FormLabel>
-          <DateTimePicker date={field.value} setDate={field.onChange} />
+          <DateTimePicker date={field.value} setDate={field.onChange} modal />
           <FormMessage />
         </FormItem>
       )}

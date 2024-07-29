@@ -13,9 +13,14 @@ import { Input } from './input';
 interface DateTimePickerProps {
   date: Date;
   setDate: (date: Date) => void;
+  modal?: boolean;
 }
 
-export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
+export function DateTimePicker({
+  date,
+  setDate,
+  modal = false,
+}: DateTimePickerProps) {
   const [selectedDateTime, setSelectedDateTime] = React.useState<DateTime>(
     DateTime.fromJSDate(date),
   );
@@ -56,14 +61,18 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
   );
 
   return (
-    <Popover>
+    <Popover modal={modal}>
       <PopoverTrigger asChild className="z-10">
         <Button
+          type="button"
           variant="outline"
           className={cn(
             'w-[280px] justify-start text-left font-normal',
             !date && 'text-muted-foreground',
           )}
+          onClick={() => {
+            console.log('clicked');
+          }}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? (

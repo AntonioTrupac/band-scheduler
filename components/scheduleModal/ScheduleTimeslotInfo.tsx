@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/select';
 import { BandNameCombobox } from '../inputs/BandNameCombobox';
 import { DatePickerTimeInput } from '../inputs/DatePickerTimeInput';
+import { DateTimePicker } from '../ui/datetime';
+import { useState } from 'react';
 
 export const ScheduleInfo = ({
   bandNames,
@@ -35,6 +37,7 @@ export const ScheduleInfo = ({
   onClose: () => void;
 }) => {
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const form = useForm({
     resolver: zodResolver(ZodCreateScheduleSchema),
     defaultValues: {
@@ -150,14 +153,7 @@ export const ScheduleInfo = ({
             )}
           />
 
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="w-full"
-          >
-            Submit
-          </Button>
+          <Button className="w-full">Submit</Button>
         </div>
       </form>
     </Form>

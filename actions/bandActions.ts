@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import connectMongo from '@/lib/mongodb';
 import {
@@ -14,17 +14,11 @@ import BandModel from '@/models/Band';
 import StudioModel from '@/models/Studio';
 import {
   addMinutes,
+  addWeeks,
   hasTimeslotConflict,
   isStartBeforeEnd,
   subMinutes,
 } from '@/lib/utils';
-
-const addWeeks = (date: Date, weeks: number) => {
-  const newDate = new Date(date.getTime());
-  newDate.setDate(date.getDate() + weeks * 7);
-
-  return newDate;
-};
 
 const createRehearsals = (
   rehearsal: ScheduleFormType['rehearsal'],
@@ -69,7 +63,14 @@ const updateBandRehearsal = async (
   }
 
   const rehearsals = createRehearsals(rehearsal, repeatWeeks);
-  console.log('rehearsals in updatBandRehersal', rehearsals);
+
+  if (!rehearsals.length) {
+    return {
+      success: false,
+      errors: { message: 'Failed to update band schedule' },
+    };
+  }
+
   const updateBand = await BandModel.findOneAndUpdate(
     {
       _id: bandId,
@@ -82,8 +83,6 @@ const updateBandRehearsal = async (
       },
     },
   );
-
-  console.log('updateBand', updateBand);
 
   if (!updateBand) {
     return {
@@ -111,7 +110,56 @@ const updateBandRehearsal = async (
   };
 };
 
-const createBand = async (
+export const createBand = async (
+  band: BandZodType,
+): Promise<Response<BandZodType>> => {
+  await connectMongo();
+
+  const validateBandSchema = ZodBandSchema.safeParse(band);
+
+  if (!validateBandSchema.success) {
+    return {
+      success: false,
+      errors: validateBandSchema.error.errors,
+    };
+  }
+
+  try {
+    const newBand = new BandModel(validateBandSchema.data);
+    await newBand.save();
+
+    if (!newBand) {
+      return {
+        success: false,
+        errors: { message: 'Failed to create band' },
+      };
+    }
+
+    await StudioModel.findByIdAndUpdate(validateBandSchema.data.studioId, {
+      $push: { bands: newBand._id },
+    });
+
+    revalidateTag('bands');
+
+    return {
+      success: true,
+      data: {
+        _id: newBand._id?.toString(),
+        name: newBand.name,
+        location: newBand.location,
+        rehearsals: newBand.rehearsals,
+        studioId: newBand.studioId.toString(),
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      errors: { message: 'Failed to create band' },
+    };
+  }
+};
+
+const createBandFromModal = async (
   band: BandZodType,
   repeatWeeks: number,
 ): Promise<Response<BandZodType>> => {
@@ -132,6 +180,13 @@ const createBand = async (
   const newBand = new BandModel(newBandData);
   await newBand.save();
 
+  if (!newBand) {
+    return {
+      success: false,
+      errors: { message: 'Failed to create band' },
+    };
+  }
+
   await StudioModel.findByIdAndUpdate(band.studioId, {
     $push: { bands: newBand._id },
   });
@@ -149,7 +204,7 @@ export const createOrUpdateBand = async (
 ): Promise<Response<BandZodType>> => {
   await connectMongo();
   const validateBandSchema = ZodBandSchema.safeParse(band);
-  console.log('validateBandSchema', validateBandSchema);
+
   if (!validateBandSchema.success) {
     return {
       success: false,
@@ -180,7 +235,7 @@ export const createOrUpdateBand = async (
         repeatWeeks,
       );
     } else {
-      return await createBand(validateBandSchema.data, repeatWeeks);
+      return await createBandFromModal(validateBandSchema.data, repeatWeeks);
     }
   } catch (error) {
     console.error(error);
@@ -219,6 +274,7 @@ export const createBandSchedule = async (
     const existingBands = await BandModel.find({
       studioId,
     }).lean();
+
     if (!existingBands) {
       return {
         success: false,
@@ -241,8 +297,6 @@ export const createBandSchedule = async (
       end: addMinutes(new Date(data.rehearsal.end), 15),
     };
 
-    console.log('adjustedRehearsal', adjustedRehearsal);
-
     const band = await BandModel.findOneAndUpdate(
       { _id: bandId, studioId },
       {
@@ -252,8 +306,6 @@ export const createBandSchedule = async (
       },
       { new: true },
     );
-
-    console.log('band', band);
 
     if (!band) {
       return {

@@ -48,7 +48,7 @@ export const createStudio = async (
       data: validateStudioSchema.data,
     };
   } catch (error) {
-    if (error.code === 11000) {
+    if ((error as { code: number }).code === 11000) {
       return {
         success: false,
         errors: { message: 'Studio name already exists' },

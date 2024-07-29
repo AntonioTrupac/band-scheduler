@@ -8,7 +8,6 @@ import { StudioForm } from './StudioForm';
 export const CreateStudioTrigger = () => {
   const [openModal, setOpenModal] = useState(false);
   const handleOpenState = () => {
-    console.log('openModal', openModal);
     setOpenModal(true);
   };
 

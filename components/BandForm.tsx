@@ -12,17 +12,19 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  createBand,
-  // createOrUpdateBand,
-  // FetchBandsResponse,
-  // updateBand,
-} from '@/actions/bandActions';
+import { createBand } from '@/actions/bandActions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { CreateBandFormType, PickedZodCreateBandSchema } from '@/types/band';
+import { DialogFooter } from './ui/dialog';
 
-export const BandForm = ({ studioId }: { studioId: string }) => {
+export const BandForm = ({
+  studioId,
+  handleCloseModal,
+}: {
+  studioId: string;
+  handleCloseModal: () => void;
+}) => {
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<CreateBandFormType>({
@@ -52,7 +54,7 @@ export const BandForm = ({ studioId }: { studioId: string }) => {
         });
       }
     } else {
-      router.replace(`/studio/${studioId}/bands`);
+      handleCloseModal();
     }
   };
 
@@ -90,7 +92,11 @@ export const BandForm = ({ studioId }: { studioId: string }) => {
               </FormItem>
             )}
           />
-          <Button type="submit">Submit</Button>
+          <DialogFooter>
+            <Button type="submit" className="mt-6">
+              Submit
+            </Button>
+          </DialogFooter>
         </form>
       </Form>
     </>

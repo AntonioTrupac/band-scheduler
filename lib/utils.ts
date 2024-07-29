@@ -52,3 +52,10 @@ export const adjustToLocalTime = (date: Date) => {
 
   return localTime;
 };
+
+export const addWeeks = (date: Date, weeks: number) => {
+  const newDate = new Date(date.getTime());
+  newDate.setDate(date.getDate() + weeks * 7);
+
+  return newDate;
+};

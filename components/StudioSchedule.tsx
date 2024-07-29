@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
@@ -8,7 +7,7 @@ import { BandZodType } from '@/types/band';
 import { EventContentArg } from '@fullcalendar/core/index.js';
 
 import { useRouter } from 'next/navigation';
-import { ScheduleTimeslotModal } from './ScheduleTimeslotModal';
+import { ScheduleTimeslotModal } from './scheduleModal/ScheduleTimeslotModal';
 import { UpdateOrDeleteTimeslotModal } from './UpdateOrDeleteTimeslotModal';
 import { useBand } from '@/hooks/use-band';
 import { adjustToLocalTime } from '@/lib/utils';
@@ -67,14 +66,14 @@ export const StudioSchedule = ({
       />
 
       <ScheduleTimeslotModal
-        openTimeslot={isCreateModalOpen}
-        handleOpenState={closeTimeslotModal}
+        isOpen={isCreateModalOpen}
+        onClose={closeTimeslotModal}
       >
         <ScheduleTimeslotModal.ScheduleInfo
           bandNames={bandNames}
           studioId={studioId}
           date={selectedDate}
-          handleOpenState={closeTimeslotModal}
+          onClose={closeTimeslotModal}
         />
       </ScheduleTimeslotModal>
 

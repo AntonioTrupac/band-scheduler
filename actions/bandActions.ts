@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 import connectMongo from '@/lib/mongodb';
 import {
@@ -19,6 +19,9 @@ import {
   isStartBeforeEnd,
   subMinutes,
 } from '@/lib/utils';
+import { auth } from '@clerk/nextjs/server';
+import { getAuthedUserId } from '@/api/auth';
+import { setRateLimit } from '@/api/upstash';
 
 const createRehearsals = (
   rehearsal: ScheduleFormType['rehearsal'],
@@ -114,6 +117,7 @@ export const createBand = async (
   band: BandZodType,
 ): Promise<Response<BandZodType>> => {
   await connectMongo();
+  const _ = getAuthedUserId();
 
   const validateBandSchema = ZodBandSchema.safeParse(band);
 
@@ -125,6 +129,8 @@ export const createBand = async (
   }
 
   try {
+    await setRateLimit();
+
     const newBand = new BandModel(validateBandSchema.data);
     await newBand.save();
 
@@ -203,6 +209,12 @@ export const createOrUpdateBand = async (
   repeatWeeks: number,
 ): Promise<Response<BandZodType>> => {
   await connectMongo();
+  const { userId } = auth();
+
+  if (!userId) {
+    throw new Error('User not found');
+  }
+
   const validateBandSchema = ZodBandSchema.safeParse(band);
 
   if (!validateBandSchema.success) {
@@ -213,6 +225,8 @@ export const createOrUpdateBand = async (
   }
 
   try {
+    await setRateLimit();
+
     const existingBand = await BandModel.find({
       name: validateBandSchema.data.name,
       studioId: validateBandSchema.data.studioId,
@@ -249,6 +263,7 @@ export const createBandSchedule = async (
   bandId: string,
 ) => {
   await connectMongo();
+  const _ = getAuthedUserId();
 
   const validateBandSchema = PickedZodCreateScheduleSchema.safeParse(data);
   if (!validateBandSchema.success) {
@@ -271,6 +286,8 @@ export const createBandSchedule = async (
   }
 
   try {
+    await setRateLimit();
+
     const existingBands = await BandModel.find({
       studioId,
     }).lean();
@@ -344,7 +361,10 @@ export const deleteSchedule = async (
   studioId: string,
 ): Promise<Response<never>> => {
   await connectMongo();
+  const _ = getAuthedUserId();
+
   try {
+    await setRateLimit();
     const band = await BandModel.findOneAndUpdate(
       { _id: bandId, studioId },
       { $pull: { rehearsals: { _id: scheduleId } } },
@@ -371,7 +391,6 @@ export const deleteSchedule = async (
   }
 };
 
-// export const
 export const updateTimeslot = async (
   bandId: string,
   scheduleId: string,
@@ -379,6 +398,8 @@ export const updateTimeslot = async (
   rehearsal: ScheduleFormType['rehearsal'],
 ) => {
   await connectMongo();
+  const _ = getAuthedUserId();
+
   const validateRehearsalSchema = PickedZodCreateScheduleSchema.safeParse({
     rehearsal,
   });
@@ -386,8 +407,7 @@ export const updateTimeslot = async (
   if (!validateRehearsalSchema.success) {
     return {
       success: false,
-      // TODO: Check how to make this message make more sense
-      errors: { message: 'Something went wrong!' },
+      errors: validateRehearsalSchema.error.errors,
     };
   }
 
@@ -404,6 +424,8 @@ export const updateTimeslot = async (
   }
 
   try {
+    await setRateLimit();
+
     const existingBands = await BandModel.find({
       studioId,
     }).lean();
@@ -460,7 +482,7 @@ export const updateTimeslot = async (
   } catch (error) {
     return {
       success: false,
-      errors: { message: 'Failed to updaet band schedule' },
+      errors: { message: 'Failed to update band schedule' },
     };
   }
 };

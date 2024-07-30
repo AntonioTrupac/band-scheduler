@@ -1,5 +1,7 @@
 'use server';
 
+import { getAuthedUserId } from '@/api/auth';
+import { setRateLimit } from '@/api/upstash';
 import connectMongo from '@/lib/mongodb';
 import StudioModel from '@/models/Studio';
 import {
@@ -7,15 +9,14 @@ import {
   StudioZodType,
   ZodStudioSchema,
 } from '@/types/studio';
-import { auth } from '@clerk/nextjs/server';
 import { revalidateTag } from 'next/cache';
 
 export const createStudio = async (
   studioFormData: Pick<StudioZodType, 'name' | 'location'>,
 ): Promise<CreateStudioResponse> => {
   await connectMongo();
+  const userId = getAuthedUserId();
 
-  const { userId } = auth();
   const studioData = {
     ...studioFormData,
     createdBy: userId,
@@ -32,6 +33,8 @@ export const createStudio = async (
   }
 
   try {
+    await setRateLimit();
+
     const newStudio = new StudioModel(validateStudioSchema.data);
     await newStudio.save();
 

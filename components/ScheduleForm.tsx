@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { createBandSchedule } from '@/actions/bandActions';
 import { Button } from './ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { SentryServerActionWrapper } from '@/api/sentryError';
 
 export const ScheduleForm = ({
   studioId,
@@ -37,7 +38,10 @@ export const ScheduleForm = ({
   });
 
   const onSubmit = async (data: ScheduleFormType) => {
-    const response = await createBandSchedule(data, studioId, bandId);
+    const response = await SentryServerActionWrapper(
+      async () => await createBandSchedule(data, studioId, bandId),
+      'createBandSchedule',
+    );
 
     if (!response.success && !Array.isArray(response.errors)) {
       console.error(response.errors);

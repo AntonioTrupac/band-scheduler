@@ -22,8 +22,8 @@ import {
 } from '@/components/ui/select';
 import { BandNameCombobox } from '../inputs/BandNameCombobox';
 import { DatePickerTimeInput } from '../inputs/DatePickerTimeInput';
-import { DateTimePicker } from '../ui/datetime';
 import { useState } from 'react';
+import { SentryServerActionWrapper } from '@/api/sentryError';
 
 export const ScheduleInfo = ({
   bandNames,
@@ -53,19 +53,23 @@ export const ScheduleInfo = ({
   });
 
   const onSubmit = async (data: BandFormType) => {
-    const response = await createOrUpdateBand(
-      {
-        ...data,
-        rehearsals: [
+    const response = await SentryServerActionWrapper(
+      async () =>
+        await createOrUpdateBand(
           {
-            start: data.rehearsal.start,
-            end: data.rehearsal.end,
-            title: data.rehearsal.title,
+            ...data,
+            rehearsals: [
+              {
+                start: data.rehearsal.start,
+                end: data.rehearsal.end,
+                title: data.rehearsal.title,
+              },
+            ],
+            studioId,
           },
-        ],
-        studioId,
-      },
-      data.week,
+          data.week,
+        ),
+      'createOrUpdateBand',
     );
 
     if (!response.success && !Array.isArray(response.errors)) {

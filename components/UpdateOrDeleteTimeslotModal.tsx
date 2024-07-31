@@ -27,6 +27,7 @@ import { useParams } from 'next/navigation';
 import { deleteSchedule, updateTimeslot } from '@/actions/bandActions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from './ui/use-toast';
+import { SentryServerActionWrapper } from '@/api/sentryError';
 
 const findBandByRehersealStart = (
   bands: BandZodType[],
@@ -163,10 +164,14 @@ const TimeslotInfo = ({ band }: { band: BandZodType }) => {
               <Button
                 type="submit"
                 onClick={form.handleSubmit(async () => {
-                  await deleteSchedule(
-                    band._id,
-                    band.rehearsals[0]._id,
-                    params._id,
+                  await SentryServerActionWrapper(
+                    async () =>
+                      await deleteSchedule(
+                        band._id,
+                        band.rehearsals[0]._id,
+                        params._id,
+                      ),
+                    'deleteSchedule',
                   );
                 })}
                 variant="destructive"
@@ -176,12 +181,16 @@ const TimeslotInfo = ({ band }: { band: BandZodType }) => {
 
               <Button
                 onClick={form.handleSubmit(async (data) => {
-                  // TODO: create a function for this and call it here
-                  const response = await updateTimeslot(
-                    band._id,
-                    band.rehearsals[0]._id,
-                    params._id,
-                    data.rehearsal,
+                  const response = await SentryServerActionWrapper(
+                    async () =>
+                      // TODO: Create a function to update a timeslot, aka move this logic to a function
+                      await updateTimeslot(
+                        band._id,
+                        band.rehearsals[0]._id,
+                        params._id,
+                        data.rehearsal,
+                      ),
+                    'updateTimeslot',
                   );
 
                   if (!response.success && !Array.isArray(response.errors)) {

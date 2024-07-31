@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { CreateBandFormType, PickedZodCreateBandSchema } from '@/types/band';
 import { DialogFooter } from './ui/dialog';
+import { SentryServerActionWrapper } from '@/api/sentryError';
 
 export const BandForm = ({
   studioId,
@@ -36,11 +37,15 @@ export const BandForm = ({
   });
 
   const onSubmit = async (data: CreateBandFormType) => {
-    const bands = await createBand({
-      ...data,
-      rehearsals: [],
-      studioId,
-    });
+    const bands = await SentryServerActionWrapper(
+      async () =>
+        await createBand({
+          ...data,
+          rehearsals: [],
+          studioId,
+        }),
+      'createBand',
+    );
 
     if (!bands.success && Array.isArray(bands.errors)) {
       const bandNameError = bands.errors?.find(

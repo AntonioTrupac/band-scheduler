@@ -27,7 +27,9 @@ export const getStudioById = async (studioId: string) => {
     return {
       success: true,
       data: {
-        name: studio.name,
+        _id: studio._id.toString(),
+        name: validateStudioSchema.data.name,
+        location: validateStudioSchema.data.location,
       },
     };
   } catch (error) {

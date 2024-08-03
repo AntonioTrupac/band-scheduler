@@ -1,7 +1,5 @@
 import { CreateStudioTrigger } from '@/components/CreateStudioTrigger';
-import { Button, buttonVariants } from '@/components/ui/button';
 import { SignedIn, UserButton } from '@clerk/nextjs';
-import Link from 'next/link';
 
 export default function StudioLayout({
   children,

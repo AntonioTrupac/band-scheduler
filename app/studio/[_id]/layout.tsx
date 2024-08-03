@@ -6,7 +6,7 @@ const getCachedStudio = cache(getStudioById, ['studio'], {
   tags: ['studio'],
 });
 
-export default async function StudioLayout({
+export default async function StudioIdLayout({
   children,
   params,
 }: Readonly<{ children: React.ReactNode; params: { _id: string } }>) {

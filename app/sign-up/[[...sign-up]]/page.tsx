@@ -6,7 +6,10 @@ export default function SignUpPage() {
   return (
     <div className="w-full lg:grid lg:grid-cols-2 h-dvh">
       <div className="flex items-center justify-center py-12">
-        <SignUp />
+        <SignUp
+          fallbackRedirectUrl="/studio"
+          signInFallbackRedirectUrl="/studio"
+        />
       </div>
       <div className="hidden bg-muted lg:block">
         <Image

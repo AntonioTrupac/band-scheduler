@@ -5,7 +5,10 @@ export default function SignInPage() {
   return (
     <div className="w-full lg:grid lg:grid-cols-2 h-dvh">
       <div className="flex items-center justify-center py-12">
-        <SignIn />
+        <SignIn
+          fallbackRedirectUrl="/studio"
+          signUpFallbackRedirectUrl="/studio"
+        />
       </div>
       <div className="hidden bg-muted lg:block">
         <Image

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description: 'View list of studios.',
 };
 
-export const getCachedStudios = cache(getStudios, ['studios'], {
+const getCachedStudios = cache(getStudios, ['studios'], {
   tags: ['studios'],
 });
 

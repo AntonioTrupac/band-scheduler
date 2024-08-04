@@ -6,7 +6,7 @@ import { StudioSchedule } from '@/components/StudioSchedule';
 import { buttonVariants } from '@/components/ui/button';
 import { ErrorWrapper } from '@/components/ui/error-wrapper';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { getCachedStudio } from './layout';
+import { getStudioById } from '@/api/studio';
 
 export async function generateMetadata({
   params,
@@ -15,7 +15,7 @@ export async function generateMetadata({
 }) {
   const id = params._id;
 
-  const studio = await getCachedStudio(id);
+  const studio = await getStudioById(id);
 
   return {
     title: `BandScheduler | ${studio.data?.name} Schedule Page`,

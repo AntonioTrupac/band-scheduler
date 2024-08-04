@@ -1,6 +1,5 @@
 'server-only';
 
-import { headers } from 'next/headers';
 import { getIP } from './headers';
 import { ratelimit } from '@/lib/upstash';
 

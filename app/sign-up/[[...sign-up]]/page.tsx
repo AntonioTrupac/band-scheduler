@@ -14,8 +14,8 @@ export default function SignUpPage() {
           </p>
         </div>
         <SignUp
-          fallbackRedirectUrl="/studio"
-          signInFallbackRedirectUrl="/studio"
+        // fallbackRedirectUrl="/studio"
+        // signInFallbackRedirectUrl="/studio"
         />
       </div>
       <div className="hidden lg:block relative h-full w-full">

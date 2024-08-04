@@ -16,8 +16,8 @@ export default async function SignInPage() {
             </p>
           </div>
           <SignIn
-            fallbackRedirectUrl="/studio"
-            signUpFallbackRedirectUrl="/studio"
+          // fallbackRedirectUrl="/studio"
+          // signUpFallbackRedirectUrl="/studio"
           />
         </div>
         <div className="hidden lg:block relative h-full w-full">

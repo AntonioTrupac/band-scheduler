@@ -21,7 +21,7 @@ export default function SignUpPage() {
       <div className="hidden lg:block relative h-full w-full">
         <Image
           alt="Mountains"
-          src="/pexels.jpg"
+          src="/pexels.webp"
           layout="fill"
           objectFit="cover"
           className="absolute inset-0 w-full h-full dark:brightness-[0.2] dark:grayscale"

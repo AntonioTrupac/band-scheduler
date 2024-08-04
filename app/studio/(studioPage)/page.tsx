@@ -10,8 +10,14 @@ import {
 } from '@/components/ui/card';
 import { buttonVariants } from '@/components/ui/button';
 import { getStudios } from '@/api/studio';
+import { Metadata } from 'next';
 
-const getCachedStudios = cache(getStudios, ['studios'], {
+export const metadata: Metadata = {
+  title: 'BandScheduler | Studios',
+  description: 'View list of studios.',
+};
+
+export const getCachedStudios = cache(getStudios, ['studios'], {
   tags: ['studios'],
 });
 

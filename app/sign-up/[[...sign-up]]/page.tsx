@@ -1,6 +1,12 @@
 import { SignUp } from '@clerk/nextjs';
+import { Metadata } from 'next';
 
 import Image from 'next/image';
+
+export const metadata: Metadata = {
+  title: 'BandScheduler | Sign Up',
+  description: "Sign up to manage your band's schedule and rehearsal times.",
+};
 
 export default function SignUpPage() {
   return (

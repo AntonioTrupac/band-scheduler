@@ -5,6 +5,12 @@ import { unstable_cache as cache } from 'next/cache';
 import Link from 'next/link';
 import { BandScheduleItem } from './BandScheduleItem';
 import { useBand } from '@/hooks/use-band';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'BandScheduler | Day Schedule',
+  description: 'View the schedule for a specific day.',
+};
 
 const getCachedBandsByDate = cache(getBandsByDate, ['bandsByDate'], {
   tags: ['bandsByDate'],

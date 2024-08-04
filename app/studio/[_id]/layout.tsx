@@ -2,7 +2,7 @@ import { getStudioById } from '@/api/studio';
 import { StudioNavbar } from '@/components/StudioNavbar';
 import { unstable_cache as cache } from 'next/cache';
 
-const getCachedStudio = cache(getStudioById, ['studio'], {
+export const getCachedStudio = cache(getStudioById, ['studio'], {
   tags: ['studio'],
 });
 

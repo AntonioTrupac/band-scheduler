@@ -6,6 +6,23 @@ import { StudioSchedule } from '@/components/StudioSchedule';
 import { buttonVariants } from '@/components/ui/button';
 import { ErrorWrapper } from '@/components/ui/error-wrapper';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { getCachedStudio } from './layout';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { _id: string };
+}) {
+  const id = params._id;
+
+  const studio = await getCachedStudio(id);
+
+  return {
+    title: `BandScheduler | ${studio.data?.name} Schedule Page`,
+    description: `View the schedule for ${studio.data?.name}`,
+    // TODO: Add open graph support
+  };
+}
 
 export default async function SchedulePage({
   params,

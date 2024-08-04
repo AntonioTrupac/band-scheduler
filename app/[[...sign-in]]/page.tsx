@@ -1,5 +1,11 @@
 import { SignedOut, SignIn } from '@clerk/nextjs';
+import { Metadata } from 'next';
 import Image from 'next/image';
+
+export const metadata: Metadata = {
+  title: 'BandScheduler | Sign In',
+  description: "Sign in to manage your band's schedule and rehearsal times.",
+};
 
 export default async function SignInPage() {
   return (

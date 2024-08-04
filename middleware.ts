@@ -20,7 +20,7 @@ export default clerkMiddleware(
 
     return NextResponse.next();
   },
-  { debug: true },
+  // { debug: true },
 );
 
 export const config = {

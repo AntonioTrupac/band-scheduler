@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/select';
 import { BandNameCombobox } from '../inputs/BandNameCombobox';
 import { DatePickerTimeInput } from '../inputs/DatePickerTimeInput';
-import { useState } from 'react';
 import { SentryServerActionWrapper } from '@/api/sentryError';
 
 export const ScheduleInfo = ({
@@ -37,7 +36,6 @@ export const ScheduleInfo = ({
   onClose: () => void;
 }) => {
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
   const form = useForm({
     resolver: zodResolver(ZodCreateScheduleSchema),
     defaultValues: {

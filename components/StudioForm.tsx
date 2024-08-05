@@ -32,7 +32,6 @@ export const StudioForm = ({
   });
 
   const onSubmit = async (data: PickedStudioZodType) => {
-    console.log('data', data);
     const response = await createStudio(data);
 
     if (!response.success && !Array.isArray(response.errors)) {
@@ -45,6 +44,11 @@ export const StudioForm = ({
       return;
     }
 
+    toast({
+      title: 'Success',
+      description: 'Studio created',
+      variant: 'default',
+    });
     handleCloseModal();
   };
 

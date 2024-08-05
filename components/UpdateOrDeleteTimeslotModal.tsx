@@ -164,15 +164,23 @@ const TimeslotInfo = ({ band }: { band: BandZodType }) => {
               <Button
                 type="submit"
                 onClick={form.handleSubmit(async () => {
-                  await SentryServerActionWrapper(
-                    async () =>
-                      await deleteSchedule(
-                        band._id,
-                        band.rehearsals[0]._id,
-                        params._id,
-                      ),
-                    'deleteSchedule',
-                  );
+                  await SentryServerActionWrapper(async () => {
+                    const response = await deleteSchedule(
+                      band._id,
+                      band.rehearsals[0]._id,
+                      params._id,
+                    );
+
+                    if (!response.success && !Array.isArray(response.errors)) {
+                      console.error(response.errors);
+                      toast({
+                        title: 'Error',
+                        description: response.errors?.message,
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+                  }, 'deleteSchedule');
                 })}
                 variant="destructive"
               >

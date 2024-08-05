@@ -58,7 +58,19 @@ export const BandForm = ({
           message: bandNameError.message,
         });
       }
+    } else if (!bands.success && !Array.isArray(bands.errors)) {
+      toast({
+        title: 'Failed to create band',
+        description: bands.errors?.message,
+        variant: 'destructive',
+      });
+      handleCloseModal();
     } else {
+      toast({
+        title: 'Band created',
+        description: 'Band has been created successfully',
+        variant: 'default',
+      });
       handleCloseModal();
     }
   };

@@ -3,11 +3,9 @@
 import connectMongo from '@/lib/mongodb';
 import StudioModel from '@/models/Studio';
 import { ZodStudioSchema } from '@/types/studio';
-import { getAuthedUserId } from './auth';
 
 export const getStudioById = async (studioId: string) => {
   await connectMongo();
-  const _ = getAuthedUserId();
 
   try {
     const studio = await StudioModel.findById(studioId).lean();
@@ -41,16 +39,14 @@ export const getStudioById = async (studioId: string) => {
   }
 };
 
-export const getStudios = async () => {
+export const getStudios = async (userId: string) => {
   await connectMongo();
-
-  const userId = getAuthedUserId();
 
   try {
     const studios = await StudioModel.find({
       name: { $exists: true },
       location: { $exists: true },
-      userId,
+      createdBy: { $eq: userId },
     }).lean();
 
     if (studios.length < 1) {

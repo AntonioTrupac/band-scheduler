@@ -1,7 +1,17 @@
-import { SignUp } from '@clerk/nextjs';
+/* eslint-disable react/no-unescaped-entities */
 import { Metadata } from 'next';
-
 import Image from 'next/image';
+import { SpeakerLoudIcon } from '@radix-ui/react-icons';
+import { SignUp } from './SignUp';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card';
+import Link from 'next/link';
+// import { SignUp } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
   title: 'BandScheduler | Sign Up',
@@ -10,28 +20,74 @@ export const metadata: Metadata = {
 
 export default function SignUpPage() {
   return (
-    <div className="w-full lg:grid lg:grid-cols-2 h-dvh">
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="mb-20 text-center">
-          <h1 className="text-3xl font-bold mb-4">Welcome to Band Manager</h1>
-          <p className="text-xl font-medium">
-            {/* eslint-disable-next-line react/no-unescaped-entities */}
-            Sign up to manage your band's schedule and rehearsal times.
+    <div className="flex h-screen overflow-hidden bg-gray-100">
+      <div className="flex w-full flex-col items-center justify-center lg:w-1/2 p-8 relative">
+        <div className="absolute inset-0 bg-grid-gray-100 bg-grid-gray-900/[0.2] [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.5))] -z-10" />
+        <Card className="w-full bg-gray-50 max-w-md shadow-xl">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center gap-4 justify-center">
+              <CardTitle className="text-2xl font-bold text-center">
+                Welcome to band manager
+              </CardTitle>
+              <SpeakerLoudIcon className="h-8 w-8 text-primary" />
+            </div>
+
+            <CardDescription className="text-center">
+              Sign up to manage your band's schedule and rehearsal times.{' '}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* <SignUp /> */}
+
+            <SignUp />
+          </CardContent>
+        </Card>
+        <div className="mt-8 text-center text-sm text-gray-600">
+          <p>
+            Don't have an account?{' '}
+            <Link
+              href="/sign-in"
+              className="font-medium text-primary hover:underline"
+            >
+              Sign in
+            </Link>
           </p>
         </div>
-        <SignUp
-        // fallbackRedirectUrl="/studio"
-        // signInFallbackRedirectUrl="/studio"
-        />
       </div>
-      <div className="hidden lg:block relative h-full w-full">
+      <div className="hidden lg:block relative w-1/2 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
         <Image
-          alt="Mountains"
+          alt="Band performing on stage"
           src="/pexels.webp"
           layout="fill"
           objectFit="cover"
-          className="absolute inset-0 w-full h-full dark:brightness-[0.2] dark:grayscale"
+          quality={90}
+          priority
+          className="absolute inset-0 object-center object-cover"
         />
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white p-8">
+          <h2 className="text-5xl font-bold mb-6 animate-fade-in-up">
+            Join Band Manager
+          </h2>
+          <p className="text-xl text-center max-w-lg animate-fade-in-up animation-delay-150">
+            Take control of your music career. Sign up now to streamline your
+            band's operations and focus on what matters most - your music.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-4 animate-fade-in-up animation-delay-300">
+            <span className="px-4 py-2 bg-white/10 rounded-full text-sm backdrop-blur-sm">
+              Schedule Multiple Sessions
+            </span>
+            <span className="px-4 py-2 bg-white/10 rounded-full text-sm backdrop-blur-sm">
+              Manage Studio Time
+            </span>
+            <span className="px-4 py-2 bg-white/10 rounded-full text-sm backdrop-blur-sm">
+              Coordinate Band Members
+            </span>
+            <span className="px-4 py-2 bg-white/10 rounded-full text-sm backdrop-blur-sm">
+              Track Rehearsal Progress
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -109,9 +109,7 @@ export const StudioSchedule = ({
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: isMobile
-            ? 'timeGridDay,timeGridWeek'
-            : 'dayGridMonth,timeGridWeek,timeGridDay',
+          right: isMobile ? 'timeGridDay,timeGridWeek' : '',
         }}
         height={isMobile ? 'auto' : undefined}
         aspectRatio={isMobile ? 0.5 : 1.35}

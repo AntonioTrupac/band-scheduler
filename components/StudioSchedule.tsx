@@ -7,9 +7,9 @@ import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import { BandZodType } from '@/types/band';
 import {
   DayCellContentArg,
-  DayCellMountArg,
   EventContentArg,
 } from '@fullcalendar/core/index.js';
+import { format } from 'date-fns';
 
 import { useRouter } from 'next/navigation';
 import { ScheduleTimeslotModal } from './scheduleModal/ScheduleTimeslotModal';
@@ -134,7 +134,7 @@ export const StudioSchedule = ({
         }}
         events={rehearsals}
         displayEventEnd
-        eventContent={(arg) => renderSchedule(arg, isMobile)}
+        eventContent={renderSchedule}
         eventClick={(args) => {
           if (args.event.start && args.event.start >= today) {
             openUpdateModal(args.event.start);
@@ -161,6 +161,12 @@ export const StudioSchedule = ({
         slotDuration={'01:00:00'}
         slotLabelInterval={'02:00'}
         allDaySlot={false}
+        slotLabelFormat={{
+          hour: 'numeric',
+          minute: '2-digit',
+          omitZeroMinute: true,
+          meridiem: 'short',
+        }}
       />
 
       <ScheduleTimeslotModal
@@ -185,18 +191,21 @@ export const StudioSchedule = ({
   );
 };
 
-const renderSchedule = (eventInfo: EventContentArg, isMobile: boolean) => {
-  const name = eventInfo.event.extendedProps.name;
-  const truncatedName = isMobile
-    ? name.slice(0, 10) + (name.length > 10 ? '...' : '')
-    : name;
+const renderSchedule = (eventInfo: EventContentArg) => {
+  const { event } = eventInfo;
+  const isMobile = window.innerWidth < 768;
+  const startTime = format(event.start!, isMobile ? 'HH:mm' : 'HH:mm');
+  const endTime = event.end
+    ? format(event.end, isMobile ? 'HH:mm' : 'HH:mm')
+    : '';
 
   return (
-    <div className="w-full h-full mx-1 px-1 text-xs md:text-sm flex flex-col justify-center overflow-hidden">
-      <p className="text-gray-800 truncate" title={name}>
-        {truncatedName}
-      </p>
-      <p className="text-black">{eventInfo.timeText}</p>
+    <div className="event-content text-xs md:text-sm">
+      <div className="event-time font-semibold">
+        {startTime}
+        {endTime && ` - ${endTime}`}
+      </div>
+      <div className="event-title truncate">{event.title}</div>
     </div>
   );
 };

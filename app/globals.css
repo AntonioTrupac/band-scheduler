@@ -8,15 +8,12 @@ body {
 }
 
 @media (max-width: 767px) {
-  .fc .fc-toolbar-title {
-    font-size: 1.2em;
-  }
   .fc .fc-button {
     padding: 0.3em 0.5em;
     font-size: 0.8em;
   }
   .fc .fc-day-header {
-    font-size: 0.8em;
+    font-size: 1em;
   }
   .fc .fc-event-time,
   .fc .fc-event-title {
@@ -41,6 +38,10 @@ body {
   .fc-event {
     min-height: 1.5em;
   }
+
+  .fc .fc-timegrid-slot-label {
+    font-size: 0.8rem;
+  }
 }
 
 .fc .fc-daygrid-day-number:hover {
@@ -58,6 +59,36 @@ body {
 
 .fc .fc-day-today {
   background-color: #f0dc83 !important;
+}
+
+.fc-timegrid-event-harness {
+  margin-right: 1px !important;
+}
+
+.fc-timegrid-event {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+.event-content {
+  display: flex;
+  flex-direction: column;
+  padding: 2px;
+  overflow: hidden;
+}
+
+.event-time {
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-title {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @layer base {

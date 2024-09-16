@@ -29,10 +29,21 @@ export const StudioSchedule = ({
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 0,
   );
-  const [today, setToday] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  });
   const calendarRef = useRef<FullCalendar | null>(null);
 
   useEffect(() => {
+    // Update the date once at midnight
+    const timeUntilMidnight =
+      new Date(currentDate).setHours(24, 0, 0, 0) - Date.now();
+    const timeout = setTimeout(() => {
+      setCurrentDate(new Date());
+    }, timeUntilMidnight);
+
+    // Resize handling
     const handleResize = () => {
       const newWidth = window.innerWidth;
       setWindowWidth(newWidth);
@@ -55,16 +66,11 @@ export const StudioSchedule = ({
 
     window.addEventListener('resize', handleResize);
 
-    // Update today's date every minute
-    const interval = setInterval(() => {
-      setToday(new Date());
-    }, 60000);
-
     return () => {
+      clearTimeout(timeout);
       window.removeEventListener('resize', handleResize);
-      clearInterval(interval);
     };
-  }, [windowWidth]);
+  }, [currentDate, windowWidth]);
 
   const router = useRouter();
   const { getRehearsals, getBandNames } = useBand();
@@ -83,13 +89,13 @@ export const StudioSchedule = ({
   const bandNames = getBandNames(bands, studioId);
 
   const handleDateClick = (arg: DateClickArg) => {
-    if (arg.date >= today) {
+    if (arg.date >= currentDate) {
       openTimeslotModal(arg.date);
     }
   };
 
   const dayCellClassNames = (arg: DayCellContentArg) => {
-    const isDisabled = arg.date < today;
+    const isDisabled = arg.date < currentDate;
     return isDisabled ? 'disabled-day' : 'bg-white';
   };
 
@@ -134,7 +140,7 @@ export const StudioSchedule = ({
         displayEventEnd
         eventContent={renderSchedule}
         eventClick={(args) => {
-          if (args.event.start && args.event.start >= today) {
+          if (args.event.start && args.event.start >= currentDate) {
             openUpdateModal(args.event.start);
           }
         }}
@@ -144,7 +150,7 @@ export const StudioSchedule = ({
         navLinks
         // This will take us to a custom schedule day page
         navLinkDayClick={(date) => {
-          if (date >= today) {
+          if (date >= currentDate) {
             const dateString = adjustToLocalTime(date)
               .toISOString()
               .split('T')[0];
@@ -152,9 +158,9 @@ export const StudioSchedule = ({
           }
         }}
         validRange={{ start: '1970-01-01' }}
-        selectConstraint={{ start: today }}
-        dayCellContent={(arg) => <DayCell arg={arg} today={today} />}
-        initialDate={today}
+        selectConstraint={{ start: currentDate }}
+        dayCellContent={(arg) => <DayCell arg={arg} today={currentDate} />}
+        initialDate={currentDate}
         dayCellClassNames={dayCellClassNames}
         slotLabelInterval={'02:00'}
         allDaySlot={false}

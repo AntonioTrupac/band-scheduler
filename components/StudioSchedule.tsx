@@ -43,12 +43,10 @@ export const StudioSchedule = ({
       setCurrentDate(new Date());
     }, timeUntilMidnight);
 
-    // Resize handling
     const handleResize = () => {
       const newWidth = window.innerWidth;
       setWindowWidth(newWidth);
 
-      // Check if we've crossed the mobile breakpoint
       if (
         (windowWidth < 768 && newWidth >= 768) ||
         (windowWidth >= 768 && newWidth < 768)

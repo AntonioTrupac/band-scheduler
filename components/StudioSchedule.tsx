@@ -158,7 +158,6 @@ export const StudioSchedule = ({
         dayCellContent={(arg) => <DayCell arg={arg} today={today} />}
         initialDate={today}
         dayCellClassNames={dayCellClassNames}
-        slotDuration={'01:00:00'}
         slotLabelInterval={'02:00'}
         allDaySlot={false}
         slotLabelFormat={{

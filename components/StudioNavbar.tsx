@@ -8,7 +8,7 @@ export const StudioNavbar = ({
   studioName?: string;
 }) => {
   return (
-    <div className="border-t-[1px] flex justify-between items-center w-full bg-white pr-12 border-b-[1px] sticky top-[68px] z-50">
+    <div className="hidden border-t-[1px] lg:flex justify-between items-center w-full bg-white pr-12 border-b-[1px] sticky top-[68px] z-50">
       <SubNavbar id={id} studioName={studioName} />
       {/* TODO: for v2 introduce a popover by clicking on a studio name, should have settings and check out other studios links */}
       <div className="flex items-center gap-2">

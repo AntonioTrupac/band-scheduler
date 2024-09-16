@@ -7,6 +7,59 @@ body {
   height: 100%;
 }
 
+@media (max-width: 767px) {
+  .fc .fc-toolbar-title {
+    font-size: 1.2em;
+  }
+  .fc .fc-button {
+    padding: 0.3em 0.5em;
+    font-size: 0.8em;
+  }
+  .fc .fc-day-header {
+    font-size: 0.8em;
+  }
+  .fc .fc-event-time,
+  .fc .fc-event-title {
+    font-size: 0.7em;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 0.8em;
+  }
+
+  .fc-event-main-frame {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fc-event-time,
+  .fc-event-title-container {
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+
+  .fc-event {
+    min-height: 1.5em;
+  }
+}
+
+.fc .fc-daygrid-day-number:hover {
+  text-decoration: none !important;
+}
+
+.fc .fc-daygrid-day-top:hover {
+  text-decoration: none !important;
+}
+
+.fc .fc-day.disabled-day {
+  background-color: #f3f4f6;
+  opacity: 0.8;
+}
+
+.fc .fc-day-today {
+  background-color: #f0dc83 !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

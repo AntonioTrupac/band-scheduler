@@ -168,6 +168,8 @@ export const StudioSchedule = ({
           omitZeroMinute: true,
           meridiem: 'short',
         }}
+        dayMaxEvents={true}
+        dayMaxEventRows={true}
       />
 
       <ScheduleTimeslotModal

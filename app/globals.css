@@ -73,7 +73,7 @@ body {
 .event-content {
   display: flex;
   flex-direction: column;
-  padding: 2px;
+  padding-inline: 4px;
   overflow: hidden;
 }
 
@@ -89,6 +89,26 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Reduce padding in event elements */
+/* .fc .fc-daygrid-event {
+  margin: 0;
+  padding: 2px;
+} */
+
+/* Adjust the event content */
+/* .fc .fc-event-title,
+.fc .fc-event-time {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+} */
+
+.fc .fc-daygrid-more-link:hover {
+  display: block;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 @layer base {

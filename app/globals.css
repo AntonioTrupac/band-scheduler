@@ -7,6 +7,110 @@ body {
   height: 100%;
 }
 
+@media (max-width: 767px) {
+  .fc .fc-button {
+    padding: 0.3em 0.5em;
+    font-size: 0.8em;
+  }
+  .fc .fc-day-header {
+    font-size: 1em;
+  }
+  .fc .fc-event-time,
+  .fc .fc-event-title {
+    font-size: 0.7em;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 0.8em;
+  }
+
+  .fc-event-main-frame {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fc-event-time,
+  .fc-event-title-container {
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+
+  .fc-event {
+    min-height: 1.5em;
+  }
+
+  .fc .fc-timegrid-slot-label {
+    font-size: 0.8rem;
+  }
+}
+
+.fc .fc-daygrid-day-number:hover {
+  text-decoration: none !important;
+}
+
+.fc .fc-daygrid-day-top:hover {
+  text-decoration: none !important;
+}
+
+.fc .fc-day.disabled-day {
+  background-color: #f3f4f6;
+  opacity: 0.8;
+}
+
+.fc .fc-day-today {
+  background-color: #f0dc83 !important;
+}
+
+.fc-timegrid-event-harness {
+  margin-right: 1px !important;
+}
+
+.fc-timegrid-event {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+.event-content {
+  display: flex;
+  flex-direction: column;
+  padding-inline: 4px;
+  overflow: hidden;
+}
+
+.event-time {
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-title {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Reduce padding in event elements */
+/* .fc .fc-daygrid-event {
+  margin: 0;
+  padding: 2px;
+} */
+
+/* Adjust the event content */
+/* .fc .fc-event-title,
+.fc .fc-event-time {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+} */
+
+.fc .fc-daygrid-more-link:hover {
+  display: block;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

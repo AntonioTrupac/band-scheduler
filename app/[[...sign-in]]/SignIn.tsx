@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { useSignIn } from '@clerk/nextjs';
@@ -15,27 +14,23 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' }),
-  userType: z.enum(['admin', 'band']),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
 
 export const SignIn = () => {
   const [error, setError] = useState('');
-  const router = useRouter();
   const { isLoaded, signIn, setActive } = useSignIn();
   const form = useForm<FormSchema>({
     defaultValues: {
       email: '',
       password: '',
-      userType: 'admin',
     },
   });
 
@@ -50,30 +45,12 @@ export const SignIn = () => {
       const result = await signIn.create({
         identifier: data.email,
         password: data.password,
+        actionCompleteRedirectUrl: '/studio',
       });
-      console.log('result', result);
+
       if (result.status === 'complete') {
         console.log('result.createdSessionId', result.createdSessionId);
         await setActive({ session: result.createdSessionId });
-
-        // set user type
-        const response = await fetch('/api/set-user-type', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userType: data.userType }),
-        });
-        console.log('response', response);
-        if (response.ok) {
-          console.log('User type updated');
-          router.push(
-            data.userType === 'admin' ? '/studio/create' : '/band/settings',
-          );
-        } else {
-          console.error('Error updating user type');
-          setError('Error updating user type');
-        }
       } else {
         setError('Sign in failed. Please check your email and password.');
       }
@@ -108,37 +85,6 @@ export const SignIn = () => {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="Password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="userType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>User Type</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-col space-y-1"
-                >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="admin" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Studio Owner</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="bandMember" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Band Member</FormLabel>
-                  </FormItem>
-                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>

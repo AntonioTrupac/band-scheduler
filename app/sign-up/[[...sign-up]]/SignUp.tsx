@@ -1,9 +1,10 @@
 'use client';
 
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Controller, useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSignUp } from '@clerk/nextjs';
 import { Input } from '@/components/ui/input';
@@ -29,7 +30,9 @@ const formSchema = z.object({
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' }),
-  userType: z.enum(['admin', 'band']),
+  userType: z.enum(['admin', 'band'], {
+    required_error: 'Please select a user type',
+  }),
   verificationCode: z
     .string()
     .length(6, { message: 'Verification code must be 6 digits' })
@@ -39,7 +42,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 export const SignUp = () => {
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -49,9 +52,10 @@ export const SignUp = () => {
     defaultValues: {
       email: '',
       password: '',
-      userType: 'admin',
+      userType: undefined,
       verificationCode: '',
     },
+    resolver: zodResolver(formSchema),
   });
 
   if (!isLoaded) {
@@ -170,8 +174,8 @@ export const SignUp = () => {
                   <FormLabel>User Type</FormLabel>
                   <FormControl>
                     <RadioGroup
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                       className="flex flex-col space-y-1"
                     >
                       <FormItem className="flex items-center space-x-3 space-y-0">
@@ -184,7 +188,7 @@ export const SignUp = () => {
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="bandMember" />
+                          <RadioGroupItem value="band" />
                         </FormControl>
                         <FormLabel className="font-normal">
                           Band Member
@@ -204,10 +208,10 @@ export const SignUp = () => {
             control={form.control}
             name="verificationCode"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormLabel>Verification Code</FormLabel>
                 <FormControl>
-                  <InputOTP maxLength={6} {...field}>
+                  <InputOTP maxLength={6} className="w-full" {...field}>
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
                       <InputOTPSlot index={1} />

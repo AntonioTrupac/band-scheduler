@@ -30,9 +30,6 @@ const formSchema = z.object({
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' }),
-  userType: z.enum(['admin', 'band'], {
-    required_error: 'Please select a user type',
-  }),
   verificationCode: z
     .string()
     .length(6, { message: 'Verification code must be 6 digits' })
@@ -52,7 +49,6 @@ export const SignUp = () => {
     defaultValues: {
       email: '',
       password: '',
-      userType: undefined,
       verificationCode: '',
     },
     resolver: zodResolver(formSchema),
@@ -74,7 +70,7 @@ export const SignUp = () => {
         });
 
         if (result.status === 'complete') {
-          await completeSignUp(data.userType);
+          await completeSignUp();
         } else {
           await signUp.prepareEmailAddressVerification({
             strategy: 'email_code',
@@ -95,7 +91,7 @@ export const SignUp = () => {
         );
 
         if (verificationResult.status === 'complete') {
-          await completeSignUp(data.userType);
+          await completeSignUp();
         } else {
           setError('Verification failed. Please try again.');
         }
@@ -108,21 +104,21 @@ export const SignUp = () => {
     }
   };
 
-  const completeSignUp = async (userType: string) => {
+  const completeSignUp = async () => {
+    const ROLE = 'admin';
     try {
       await setActive({ session: signUp.createdSessionId });
 
-      const response = await fetch('/api/set-user-type', {
+      const response = await fetch('/api/setUserType', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userType }),
+        body: JSON.stringify({ role: ROLE }),
       });
 
       if (response.ok) {
-        console.log('User type updated');
-        router.push(userType === 'admin' ? '/studio/create' : '/band/settings');
+        router.push('/studio');
       } else {
         console.error('Error updating user type');
         setError('Error updating user type');
@@ -160,41 +156,6 @@ export const SignUp = () => {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="Password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="userType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>User Type</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="admin" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Studio Owner
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="band" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Band Member
-                        </FormLabel>
-                      </FormItem>
-                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

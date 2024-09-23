@@ -28,22 +28,13 @@ export default clerkMiddleware((auth, req) => {
   const { userId, sessionClaims } = auth();
   const pathname = req.nextUrl.pathname;
   const publicMetadata = sessionClaims?.publicMetadata || {};
-  const role = (publicMetadata as { userType: string }).userType;
+  const role = (publicMetadata as { role: string }).role;
 
   if (!auth().userId && isProtectedRoute(req)) {
-    // Add custom logic to run before redirecting
     return auth().redirectToSignIn({ returnBackUrl: req.url });
   }
 
   if (userId) {
-    if (!role && isProtectedRoute(req)) {
-      // User is trying to access a protected route without a role
-      // Redirect to home page
-      const url = req.nextUrl.clone();
-      url.pathname = '/sign-up';
-      return NextResponse.redirect(url);
-    }
-
     if (pathname === '/' || pathname === '/sign-up') {
       // Redirect authenticated users to '/studio'
       const url = req.nextUrl.clone();

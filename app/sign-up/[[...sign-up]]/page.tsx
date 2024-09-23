@@ -11,7 +11,6 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import Link from 'next/link';
-// import { SignUp } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
   title: 'BandScheduler | Sign Up',
@@ -37,8 +36,6 @@ export default function SignUpPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* <SignUp /> */}
-
             <SignUp />
           </CardContent>
         </Card>

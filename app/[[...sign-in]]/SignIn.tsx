@@ -14,6 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -25,6 +26,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 export const SignIn = () => {
+  // TODO: implement error handling and toast messages
   const [error, setError] = useState('');
   const { isLoaded, signIn, setActive } = useSignIn();
   const form = useForm<FormSchema>({
@@ -32,6 +34,7 @@ export const SignIn = () => {
       email: '',
       password: '',
     },
+    resolver: zodResolver(formSchema),
   });
 
   if (!isLoaded) {
@@ -49,7 +52,6 @@ export const SignIn = () => {
       });
 
       if (result.status === 'complete') {
-        console.log('result.createdSessionId', result.createdSessionId);
         await setActive({ session: result.createdSessionId });
       } else {
         setError('Sign in failed. Please check your email and password.');

@@ -4,19 +4,19 @@ import { clerkClient } from '@clerk/nextjs/server';
 export async function POST(req: Request) {
   try {
     const { userId } = auth();
-    const { userType } = await req.json();
+    const { role } = await req.json();
 
     if (!userId) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    if (userType !== 'admin' && userType !== 'band') {
+    if (role !== 'admin') {
       return new Response('Invalid user type', { status: 400 });
     }
 
     await clerkClient.users.updateUser(userId, {
       publicMetadata: {
-        userType,
+        role,
       },
     });
 

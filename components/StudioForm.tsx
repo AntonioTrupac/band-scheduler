@@ -34,11 +34,13 @@ export const StudioForm = ({
   const onSubmit = async (data: PickedStudioZodType) => {
     const response = await createStudio(data);
 
-    if (!response.success && !Array.isArray(response.errors)) {
+    if (!response.success) {
       console.error(response.errors);
       toast({
         title: 'Error',
-        description: response.errors?.message,
+        description: Array.isArray(response.errors)
+          ? response.errors.map((err) => err.message).join(', ')
+          : response.errors?.message,
         variant: 'destructive',
       });
       return;

@@ -28,6 +28,12 @@ export const ZodStudioSchema = z.object({
     })
     .min(1)
     .max(255),
+  organizationId: z
+    .string({
+      invalid_type_error: 'Organization ID must be a string',
+      message: 'Organization ID is required',
+    })
+    .min(1),
   bands: z.array(z.any().optional()),
 });
 export type StudioZodType = z.infer<typeof ZodStudioSchema>;

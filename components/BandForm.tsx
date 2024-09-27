@@ -13,7 +13,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createBand } from '@/actions/bandActions';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { CreateBandFormType, PickedZodCreateBandSchema } from '@/types/band';
 import { DialogFooter } from './ui/dialog';
@@ -27,7 +26,6 @@ export const BandForm = ({
   handleCloseModal: () => void;
 }) => {
   const { toast } = useToast();
-  const router = useRouter();
   const form = useForm<CreateBandFormType>({
     resolver: zodResolver(PickedZodCreateBandSchema),
     defaultValues: {

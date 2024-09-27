@@ -3,7 +3,6 @@ import InvitationModel from '../models/Invitation';
 import connectMongo from '@/lib/mongodb';
 import { getAuthedUserId } from '@/api/auth';
 import { InvitationEmailTemplate } from '@/components/InvitationEmailTemplate';
-import { ReactElement } from 'react';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

@@ -8,21 +8,23 @@ import {
 } from '@/components/ui/dialog';
 import { type ReactNode } from 'react';
 
-export const CreateBandModal = ({
+export const ModalWrapper = ({
   children,
   openModal,
   handleOpenModal,
+  title,
 }: {
   children: ReactNode;
   openModal: boolean;
   handleOpenModal: () => void;
+  title: string;
 }) => {
   return (
     <Dialog open={openModal} onOpenChange={handleOpenModal}>
       {/* TODO: Fix this aria described by */}
-      <DialogContent aria-describedby="whatever">
+      <DialogContent aria-describedby={title}>
         <DialogHeader>
-          <DialogTitle>Create a studio</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         {children}
       </DialogContent>

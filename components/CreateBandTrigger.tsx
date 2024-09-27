@@ -2,8 +2,8 @@
 
 import { Button } from '@/components//ui/button';
 import { useState } from 'react';
-import { CreateBandModal } from './CreateBandModal';
 import { BandForm } from './BandForm';
+import { ModalWrapper } from './ModalWrapper';
 
 export const CreateBandTrigger = ({ id }: { id: string }) => {
   const [openModal, setOpenModal] = useState(false);
@@ -15,12 +15,13 @@ export const CreateBandTrigger = ({ id }: { id: string }) => {
     <div>
       <Button onClick={handleOpenState}>Create a band</Button>
 
-      <CreateBandModal
+      <ModalWrapper
         openModal={openModal}
         handleOpenModal={() => setOpenModal(false)}
+        title="Create a band"
       >
         <BandForm studioId={id} handleCloseModal={() => setOpenModal(false)} />
-      </CreateBandModal>
+      </ModalWrapper>
     </div>
   );
 };

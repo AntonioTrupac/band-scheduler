@@ -8,10 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { getStudios } from '@/api/studio';
 import { Metadata } from 'next';
 import { getAuthedUserId } from '@/api/auth';
+import { CreateInvitationModalTrigger } from '@/components/CreateInvitationModalTrigger';
 
 export const metadata: Metadata = {
   title: 'BandScheduler | Studios',
@@ -54,16 +55,17 @@ export default async function StudioPage() {
               </div>
             </CardHeader>
 
-            <CardFooter>
+            <CardFooter className="flex flex-col w-full">
               <Link
                 className={buttonVariants({
                   variant: 'default',
-                  className: `w-full mr-4`,
+                  className: `w-full`,
                 })}
                 href={`/studio/${studio._id.toString()}/`}
               >
                 View schedule
               </Link>
+              <CreateInvitationModalTrigger studioId={studio._id.toString()} />
             </CardFooter>
           </Card>
         ))}

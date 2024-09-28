@@ -8,12 +8,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { InvitationZodType, ZodInvitationSchema } from '@/types/invitation';
+import { InvitationZodType, ZodInvitationFormSchema } from '@/types/invitation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Input } from './ui/input';
 import { DateTimePicker } from './ui/datetime';
 import { Button } from './ui/button';
+import { type Response } from '@/types/band';
 
 export const InvitationLinkForm = ({
   studioId,
@@ -23,17 +24,39 @@ export const InvitationLinkForm = ({
   handleCloseModal: () => void;
 }) => {
   const form = useForm<InvitationZodType>({
-    resolver: zodResolver(ZodInvitationSchema),
+    resolver: zodResolver(ZodInvitationFormSchema),
     defaultValues: {
-      token: crypto.randomUUID(),
       invitationName: '',
-      studioId: '',
       expiresAt: new Date(),
+      email: '',
     },
   });
 
-  const onSubmit = (data: InvitationZodType) => {
-    console.log(data);
+  const onSubmit = async (data: InvitationZodType) => {
+    try {
+      const response = await fetch('/api/invitation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invitationName: data.invitationName,
+          expiresAt: data.expiresAt,
+          studioId,
+          email: data.email,
+        }),
+      });
+
+      const result: Response<InvitationZodType> = await response.json();
+
+      if (response.ok) {
+        handleCloseModal();
+      } else {
+        console.error('Error:', result.errors);
+      }
+    } catch (error) {
+      console.error('An unexpected error occurred:', error);
+    }
   };
 
   return (
@@ -56,18 +79,38 @@ export const InvitationLinkForm = ({
 
           <FormField
             control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="email">Email</FormLabel>
+                <FormControl>
+                  <Input {...field} id="email" type="email" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="expiresAt"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Rehearsal End</FormLabel>
+                <FormLabel>Expires at</FormLabel>
                 <DateTimePicker date={field.value} setDate={field.onChange} />
                 <FormMessage />
               </FormItem>
             )}
           />
 
+          {form.formState.errors.root && (
+            <p className="text-red-500">{form.formState.errors.root.message}</p>
+          )}
+
           <div className="flex justify-end">
-            <Button type="submit">Submit</Button>
+            <Button suppressHydrationWarning type="submit">
+              Submit
+            </Button>
           </div>
         </div>
       </form>

@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Zod schema for the Invitation model
 export const ZodInvitationSchema = z.object({
   _id: z.any().optional(),
   token: z
@@ -19,14 +18,16 @@ export const ZodInvitationSchema = z.object({
       message: 'Studio ID is required',
     })
     .min(1, { message: 'Studio ID cannot be empty' }),
-  expiresAt: z
-    .date({
-      invalid_type_error: 'Expiration date must be a valid date',
-      message: 'Expiration date is required',
-    })
-    .refine((date) => date > new Date(), {
-      message: 'Expiration date must be in the future',
-    }),
+  expiresAt: z.coerce.date().refine((date) => date.getTime() > Date.now(), {
+    message: 'Expiration date must be in the future',
+  }),
+  email: z.string().email('Invalid email address'),
 });
 
 export type InvitationZodType = z.infer<typeof ZodInvitationSchema>;
+
+export const ZodInvitationFormSchema = ZodInvitationSchema.pick({
+  invitationName: true,
+  expiresAt: true,
+  email: true,
+});

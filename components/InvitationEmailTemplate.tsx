@@ -26,11 +26,11 @@ export const InvitationEmailTemplate = ({
             <Column>
               <Heading>Invitation to join BandsScheduler</Heading>
               <Text>
-                You have been invited to join BandsScheduler. Click the link
+                You have been invited to join Band Scheduler. Click the link
                 below to sign up and get started.
               </Text>
               <Text>
-                <a href={invitationLink}>Join BandsScheduler</a>
+                <a href={invitationLink}>Join Band Scheduler</a>
               </Text>
             </Column>
           </Row>

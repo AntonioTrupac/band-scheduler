@@ -22,7 +22,7 @@ export const CreateInvitationModalTrigger = ({
       </Button>
 
       <ModalWrapper
-        title="Invite a band"
+        title="Send invitation"
         openModal={openModal}
         handleOpenModal={() => setOpenModal(false)}
       >

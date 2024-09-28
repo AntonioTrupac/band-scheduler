@@ -18,7 +18,7 @@ const InvitationSchema: Schema = new Schema({
 
 // TODO: Remove as Model<Invitation> from InvitationModel and fix types where needed in the app
 const InvitationModel: Model<InvitationType> =
-  (models.Band as Model<InvitationType>) ||
+  (models.Invitation as Model<InvitationType>) ||
   model<InvitationType>('Invitation', InvitationSchema);
 
 export default InvitationModel;

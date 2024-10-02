@@ -4,7 +4,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 
 export async function POST(request: Request) {
   const userId = getAuthedUserId();
-  console.log('userId', userId);
+
   if (!userId) {
     return new Response(
       JSON.stringify({

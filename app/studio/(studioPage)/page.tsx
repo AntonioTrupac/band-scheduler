@@ -1,18 +1,13 @@
 import Link from 'next/link';
 import { unstable_cache as cache } from 'next/cache';
 
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { buttonVariants } from '@/components/ui/button';
 import { getStudios } from '@/api/studio';
 import { Metadata } from 'next';
 import { getAuthedUserId } from '@/api/auth';
 import { CreateInvitationModalTrigger } from '@/components/CreateInvitationModalTrigger';
+import { HomeIcon } from '@radix-ui/react-icons';
 
 export const metadata: Metadata = {
   title: 'BandScheduler | Studios',
@@ -25,7 +20,6 @@ const getCachedStudios = cache(getStudios, ['studios'], {
 
 export default async function StudioPage() {
   const userId = getAuthedUserId();
-
   const studios = await getCachedStudios(userId);
 
   if (!studios.success) {
@@ -42,24 +36,25 @@ export default async function StudioPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         {studios.data?.map((studio) => (
-          <Card key={studio._id.toString()}>
-            <CardHeader>
-              <div className="flex flex-col mb-2">
-                <span className="text-lg underline mb-1">Studio name</span>
-                <CardTitle className="">{studio.name}</CardTitle>
-              </div>
-
-              <div>
-                <span className="text-lg underline mb-1">Location</span>
-                <CardDescription>{studio.location}</CardDescription>
+          <Card
+            key={studio._id.toString()}
+            className="flex flex-col overflow-hidden"
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-semibold">
+                {studio.name}
+              </CardTitle>
+              <div className="flex items-center text-sm text-muted-foreground mt-1">
+                <HomeIcon className="w-6 h-6 mr-1" />
+                <span className="text-lg">{studio.location}</span>
               </div>
             </CardHeader>
 
-            <CardFooter className="flex flex-col w-full">
+            <CardFooter className="flex flex-col gap-0.5 bg-muted/50 p-4">
               <Link
                 className={buttonVariants({
                   variant: 'default',
-                  className: `w-full`,
+                  className: 'w-full',
                 })}
                 href={`/studio/${studio._id.toString()}/`}
               >

@@ -22,6 +22,7 @@ export const ZodInvitationSchema = z.object({
     message: 'Expiration date must be in the future',
   }),
   email: z.string().email('Invalid email address'),
+  isUsed: z.boolean(),
 });
 
 export type InvitationZodType = z.infer<typeof ZodInvitationSchema>;

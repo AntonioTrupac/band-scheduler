@@ -43,6 +43,7 @@ export const createInvitation = async ({
     invitationName,
     expiresAt: expiresAt ? expiresAt : expiresAtDefault,
     email,
+    isUsed: false,
   };
 
   try {
@@ -55,24 +56,26 @@ export const createInvitation = async ({
       };
     }
 
-    console.log('parsedData', parsedData);
     const newInvitation = new InvitationModel({
       token: parsedData.data.token,
       invitationName: parsedData.data.invitationName,
       studioId: parsedData.data.studioId,
       expiresAt: expiresAt ? parsedData.data.expiresAt : expiresAtDefault,
+      isUsed: parsedData.data.isUsed,
     });
     const saved = await newInvitation.save();
 
     if (newInvitation.errors || saved.errors) {
-      console.log('newInvitation.errors', newInvitation.errors);
+      console.error('newInvitation.errors', newInvitation.errors);
       return {
         success: false,
         errors: { message: 'Failed to create or update band' },
       };
     }
 
-    const invitationLink = `${process.env.NEXT_PUBLIC_BASE_URL}/studio/${studioId}/invitation/${token}/sign-up`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+    const invitationLink = `${baseUrl}/invitation/sign-up?token=${parsedData.data.token}`;
 
     const { error: emailError } = await resend.emails.send({
       from: 'BandScheduler <no-reply@bandscheduler-mail.xyz>',
@@ -84,7 +87,6 @@ export const createInvitation = async ({
     });
 
     if (emailError) {
-      console.log('emailError', emailError);
       return {
         success: false,
         errors: { message: 'Failed to send email' },

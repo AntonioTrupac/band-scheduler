@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useSignUp } from '@clerk/nextjs';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -16,54 +13,70 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import { useRouter } from 'next/navigation';
-import React from 'react';
+import { useState } from 'react';
+import { useSignUp } from '@clerk/nextjs';
 
-const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  password: z
-    .string()
-    .min(8, { message: 'Password must be at least 8 characters' }),
-  verificationCode: z
-    .string()
-    .refine((val) => val.length === 6 || val.length === 0, {
-      message: 'Verification code must be 6 digits',
-    })
-    .optional(),
-});
+const SignUpSchema = z
+  .object({
+    email: z.string().email({ message: 'Invalid email address' }),
+    password: z
+      .string()
+      .min(6, { message: 'Password must be at least 6 characters' }),
+    confirmPassword: z.string(),
+    verificationCode: z
+      .string()
+      .refine((val) => val.length === 6 || val.length === 0, {
+        message: 'Verification code must be 6 digits',
+      })
+      .optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
-type FormSchema = z.infer<typeof formSchema>;
+type SignUpFormData = z.infer<typeof SignUpSchema>;
 
-export const SignUp = () => {
+export const StudioInvitationForm = ({
+  token,
+  studioId,
+}: {
+  token: string;
+  studioId: string;
+}) => {
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const { isLoaded, signUp, setActive } = useSignUp();
-  const form = useForm<FormSchema>({
+
+  const form = useForm<SignUpFormData>({
     defaultValues: {
       email: '',
       password: '',
+      confirmPassword: '',
       verificationCode: '',
     },
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(SignUpSchema),
   });
 
   if (!isLoaded) {
     return null;
   }
 
-  const onSubmit: SubmitHandler<FormSchema> = async (data: FormSchema) => {
+  console.log(form.formState);
+  const onSubmit = async (data: SignUpFormData) => {
     setError('');
     setIsLoading(true);
-
+    console.log('data', data);
     try {
       if (step === 1) {
         const result = await signUp.create({
@@ -82,8 +95,13 @@ export const SignUp = () => {
         }
       } else if (step === 2) {
         if (!data.verificationCode && data.verificationCode !== '') {
-          setError('Please enter your verification code');
+          form.setError('verificationCode', {
+            type: 'manual',
+            message: 'Please enter your verification code',
+          });
           console.error('Verification code is required');
+          setIsLoading(false);
+          return;
         }
 
         const verificationResult = await signUp.attemptEmailAddressVerification(
@@ -95,7 +113,10 @@ export const SignUp = () => {
         if (verificationResult.status === 'complete') {
           await completeSignUp();
         } else {
-          setError('Verification failed. Please try again.');
+          form.setError('verificationCode', {
+            type: 'manual',
+            message: 'Verification failed. Please try again.',
+          });
         }
       }
     } catch (err) {
@@ -107,7 +128,7 @@ export const SignUp = () => {
   };
 
   const completeSignUp = async () => {
-    const ROLE = 'admin';
+    const ROLE = 'band';
     try {
       await setActive({ session: signUp.createdSessionId });
 
@@ -116,11 +137,11 @@ export const SignUp = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ role: ROLE }),
+        body: JSON.stringify({ role: ROLE, token }),
       });
 
       if (response.ok) {
-        router.push('/studio');
+        router.push(`/studio/${studioId}`);
       } else {
         console.error('Error updating user type');
         setError('Error updating user type');
@@ -158,6 +179,24 @@ export const SignUp = () => {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="Password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem className="mb-4">
+                  <FormLabel>Confirm password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Confirm password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

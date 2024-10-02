@@ -17,7 +17,7 @@ export const CreateInvitationModalTrigger = ({
 
   return (
     <div className="w-full">
-      <Button className="mt-4 w-full" onClick={handleOpenState}>
+      <Button className="mt-2 w-full" onClick={handleOpenState}>
         Invite a band
       </Button>
 

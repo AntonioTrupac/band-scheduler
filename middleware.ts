@@ -8,36 +8,39 @@ export default clerkMiddleware((auth, req) => {
   const pathname = req.nextUrl.pathname;
   const publicMetadata = sessionClaims?.publicMetadata || {};
   const role = (publicMetadata as { role: string }).role;
+  const studioId = (publicMetadata as { studioId: string }).studioId;
+  console.log('Middleware processing:', pathname);
 
-  if (!auth().userId && isProtectedRoute(req)) {
-    return auth().redirectToSignIn({ returnBackUrl: req.url });
+  if (!userId && isProtectedRoute(req)) {
+    console.log('Redirecting unauthenticated user to sign-in');
+    // Redirect unauthenticated users to sign-in
+    const signInUrl = req.nextUrl.clone();
+    signInUrl.pathname = '/sign-in';
+    return NextResponse.redirect(signInUrl);
   }
 
   if (userId) {
-    if (
-      pathname === '/' ||
-      pathname === '/sign-up' ||
-      pathname === '/invitation/*'
-    ) {
+    if (['/', '/sign-up', '/invitation'].includes(pathname)) {
+      console.log('Redirecting authenticated user to /studio');
       // Redirect authenticated users to '/studio'
-      const url = req.nextUrl.clone();
-      url.pathname = '/studio';
-      return NextResponse.redirect(url);
+      const studioUrl = req.nextUrl.clone();
+      studioUrl.pathname = '/studio';
+      return NextResponse.redirect(studioUrl);
     }
 
-    // if (pathname === '/studio' && role === 'band') {
-    //   // Redirect band users to '/studio/create'
-    //   const url = req.nextUrl.clone();
-    //   url.pathname = `/studio/${publicMetadata.studioId}`;
-    //   return NextResponse.redirect(url);
-    // }
+    if (pathname === '/studio' && role !== 'admin') {
+      console.log('Redirecting non-admin user to studio');
+      const userStudioUrl = req.nextUrl.clone();
+      userStudioUrl.pathname = `/studio/${studioId}`;
+      return NextResponse.redirect(userStudioUrl);
+    }
 
     // Protect '/studio/create' from non-admin users
     if (pathname.startsWith('/studio/create') && role !== 'admin') {
-      // Redirect to unauthorized page
-      const url = req.nextUrl.clone();
-      url.pathname = '/unauthorized';
-      return NextResponse.redirect(url);
+      console.log('Unauthorized access to /studio/create');
+      const unauthorizedUrl = req.nextUrl.clone();
+      unauthorizedUrl.pathname = '/unauthorized';
+      return NextResponse.redirect(unauthorizedUrl);
     }
   }
 

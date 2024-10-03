@@ -11,13 +11,15 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import { currentUser } from '@clerk/nextjs/server';
+
 import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'BandScheduler | Sign In',
   description: "Sign in to manage your band's schedule and rehearsal times.",
 };
 
-export default function SignInPage() {
+export default async function SignInPage() {
   return (
     <SignedOut>
       <div className="flex h-screen overflow-hidden bg-gray-100">

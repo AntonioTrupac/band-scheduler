@@ -1,50 +1,71 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
+type PublicMetadata = {
+  role: 'admin' | 'band';
+  studioId: string;
+};
+
 const isProtectedRoute = createRouteMatcher(['/studio(.*)']);
+const isAdminRoute = createRouteMatcher(['/studio/create(.*)']);
+
+// helper for redirects
+const redirect = (url: string, req: Request) =>
+  NextResponse.redirect(new URL(url, req.url));
+
+// helper for logging
+const log = (message: string, obj?: any) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, obj);
+  }
+};
 
 export default clerkMiddleware((auth, req) => {
-  const { userId, sessionClaims } = auth();
-  const pathname = req.nextUrl.pathname;
-  const publicMetadata = sessionClaims?.publicMetadata || {};
-  const role = (publicMetadata as { role: string }).role;
-  const studioId = (publicMetadata as { studioId: string }).studioId;
-  console.log('Middleware processing:', pathname);
+  const start = Date.now(); // For performance monitoring
 
-  if (!userId && isProtectedRoute(req)) {
-    console.log('Redirecting unauthenticated user to sign-in');
-    // Redirect unauthenticated users to sign-in
-    const signInUrl = req.nextUrl.clone();
-    signInUrl.pathname = '/sign-in';
-    return NextResponse.redirect(signInUrl);
+  try {
+    const { userId, sessionClaims } = auth();
+    const pathname = new URL(req.url).pathname;
+    const { role, studioId } =
+      (sessionClaims?.publicMetadata as PublicMetadata) || {};
+
+    log('Middleware processing:', { pathname, userId, role, studioId });
+
+    if (!userId && isProtectedRoute(req)) {
+      log('Redirecting unauthenticated user to sign-in');
+      return redirect('/sign-in', req);
+    }
+
+    // Handle authenticated users
+    if (userId) {
+      if (['/', '/sign-up', '/invitation'].includes(pathname)) {
+        log('Redirecting authenticated user to studio');
+        return redirect('/studio', req);
+      }
+
+      if (pathname === '/studio' && role !== 'admin') {
+        log('Redirecting non-admin user to their studio');
+        return redirect(`/studio/${studioId}`, req);
+      }
+
+      if (isAdminRoute(req) && role !== 'admin') {
+        log('Blocking non-admin user from admin route');
+        return redirect('/unauthorized', req);
+      }
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    log('Middleware error:', error);
+    // In case of error, allow the request to proceed and let the application handle it
+    return NextResponse.next();
+  } finally {
+    // Log performance metrics in development
+    if (process.env.NODE_ENV === 'development') {
+      const duration = Date.now() - start;
+      log(`Middleware execution time: ${duration}ms`);
+    }
   }
-
-  if (userId) {
-    if (['/', '/sign-up', '/invitation'].includes(pathname)) {
-      console.log('Redirecting authenticated user to /studio');
-      // Redirect authenticated users to '/studio'
-      const studioUrl = req.nextUrl.clone();
-      studioUrl.pathname = '/studio';
-      return NextResponse.redirect(studioUrl);
-    }
-
-    if (pathname === '/studio' && role !== 'admin') {
-      console.log('Redirecting non-admin user to studio');
-      const userStudioUrl = req.nextUrl.clone();
-      userStudioUrl.pathname = `/studio/${studioId}`;
-      return NextResponse.redirect(userStudioUrl);
-    }
-
-    // Protect '/studio/create' from non-admin users
-    if (pathname.startsWith('/studio/create') && role !== 'admin') {
-      console.log('Unauthorized access to /studio/create');
-      const unauthorizedUrl = req.nextUrl.clone();
-      unauthorizedUrl.pathname = '/unauthorized';
-      return NextResponse.redirect(unauthorizedUrl);
-    }
-  }
-
-  return NextResponse.next();
 });
 
 export const config = {

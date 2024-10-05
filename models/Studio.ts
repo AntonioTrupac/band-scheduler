@@ -19,7 +19,6 @@ const StudioSchema: Schema = new Schema({
     required: true,
   },
   createdBy: { type: String, required: true },
-  organizationId: { type: String, required: true },
   bands: [{ type: Schema.Types.ObjectId, ref: 'Band' }],
 });
 

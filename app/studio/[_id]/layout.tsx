@@ -10,8 +10,10 @@ export default async function StudioIdLayout({
   children,
   params,
 }: Readonly<{ children: React.ReactNode; params: { _id: string } }>) {
-  const studio = await getCachedStudio(params._id);
+  // const studio = await getCachedStudio(params._id);
+  const studio = await getStudioById(params._id);
 
+  console.log('Studio:', studio);
   return (
     <section>
       <StudioNavbar id={params._id} studioName={studio.data?.name} />

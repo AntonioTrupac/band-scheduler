@@ -19,8 +19,6 @@ const BandSchema: Schema = new Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
-    dropDups: true,
   },
   location: {
     type: String,
@@ -43,6 +41,7 @@ const BandSchema: Schema = new Schema({
       bandId: {
         type: Schema.Types.ObjectId,
         ref: 'Band',
+        required: true,
       },
       createdBy: {
         type: String,
@@ -53,6 +52,7 @@ const BandSchema: Schema = new Schema({
   studioId: {
     type: Schema.Types.ObjectId,
     ref: 'Studio',
+    required: true,
   },
   createdBy: {
     type: String,
@@ -60,10 +60,23 @@ const BandSchema: Schema = new Schema({
   },
 });
 
+// Compound unique index for name and studioId
+BandSchema.index({ name: 1, studioId: 1 }, { unique: true });
+
 // Add index for efficient querying
-// 1 ascending order, -1 descending order
 BandSchema.index({ studioId: 1, createdBy: 1, name: 1 });
 BandSchema.index({ 'rehearsals.start': 1, 'rehearsals.end': 1 });
+
+BandSchema.pre<BandType>('save', function (next) {
+  console.log('Band name before hook:', this.name);
+
+  if (typeof this.name === 'string') {
+    this.name = this.name.charAt(0).toUpperCase() + this.name.slice(1);
+  }
+  console.log('Band name after hook:', this.name);
+
+  next();
+});
 
 // TODO: Remove as Model<BandType> from BandModel and fix types where needed in the app
 const BandModel: Model<BandType> =

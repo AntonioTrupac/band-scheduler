@@ -163,9 +163,25 @@ export const createBand = async (
     };
   } catch (error) {
     console.error(error);
+    console.error(error);
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as any).code === 11000
+    ) {
+      const keyValue = (error as any).keyValue;
+      if (keyValue && keyValue.name && keyValue.studioId) {
+        return {
+          success: false,
+          errors: {
+            message: 'A band with this name already exists in this studio',
+          },
+        };
+      }
+    }
     return {
       success: false,
-      errors: { message: 'Failed to create band' },
+      errors: { message: 'Failed to create or update band' },
     };
   }
 };

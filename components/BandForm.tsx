@@ -17,6 +17,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { CreateBandFormType, PickedZodCreateBandSchema } from '@/types/band';
 import { DialogFooter } from './ui/dialog';
 import { SentryServerActionWrapper } from '@/api/sentryError';
+import { Fragment } from 'react';
 
 export const BandForm = ({
   studioId,
@@ -74,7 +75,7 @@ export const BandForm = ({
   };
 
   return (
-    <>
+    <Fragment>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -114,6 +115,6 @@ export const BandForm = ({
           </DialogFooter>
         </form>
       </Form>
-    </>
+    </Fragment>
   );
 };

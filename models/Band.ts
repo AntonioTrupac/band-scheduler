@@ -8,11 +8,12 @@ export type BandType = {
     start: Date;
     end: Date;
     title: string;
+    bandId?: string;
+    createdBy: string;
   }[];
   studioId: string;
+  createdBy: string;
 } & Document;
-
-// TODO: Add BandType into new Schema
 
 const BandSchema: Schema = new Schema({
   name: {
@@ -39,13 +40,30 @@ const BandSchema: Schema = new Schema({
         type: String,
         required: true,
       },
+      bandId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Band',
+      },
+      createdBy: {
+        type: String,
+        required: true,
+      },
     },
   ],
   studioId: {
     type: Schema.Types.ObjectId,
     ref: 'Studio',
   },
+  createdBy: {
+    type: String,
+    required: true,
+  },
 });
+
+// Add index for efficient querying
+// 1 ascending order, -1 descending order
+BandSchema.index({ studioId: 1, createdBy: 1, name: 1 });
+BandSchema.index({ 'rehearsals.start': 1, 'rehearsals.end': 1 });
 
 // TODO: Remove as Model<BandType> from BandModel and fix types where needed in the app
 const BandModel: Model<BandType> =

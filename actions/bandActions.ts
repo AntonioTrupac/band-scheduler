@@ -117,7 +117,7 @@ export const createBand = async (
   band: BandZodType,
 ): Promise<Response<BandZodType>> => {
   await connectMongo();
-  const _ = getAuthedUserId();
+  const userId = getAuthedUserId();
 
   const validateBandSchema = ZodBandSchema.safeParse(band);
 
@@ -131,9 +131,13 @@ export const createBand = async (
   try {
     await setRateLimit();
 
-    const newBand = new BandModel(validateBandSchema.data);
+    const newBand = new BandModel({
+      ...validateBandSchema.data,
+      createdBy: userId,
+    });
     await newBand.save();
 
+    console.log('newBand', newBand);
     if (!newBand) {
       return {
         success: false,
@@ -158,6 +162,7 @@ export const createBand = async (
       },
     };
   } catch (error) {
+    console.error(error);
     return {
       success: false,
       errors: { message: 'Failed to create band' },

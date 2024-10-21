@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ScheduleInfo } from './ScheduleTimeslotInfo';
+import { ScheduleForm } from './ScheduleTimeslotForm';
 
 export const ScheduleTimeslotModal = ({
   children,
@@ -33,4 +33,4 @@ export const ScheduleTimeslotModal = ({
   );
 };
 
-ScheduleTimeslotModal.ScheduleInfo = ScheduleInfo;
+ScheduleTimeslotModal.ScheduleForm = ScheduleForm;

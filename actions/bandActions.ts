@@ -52,11 +52,84 @@ const createRehearsals = (
   return rehearsals;
 };
 
-const updateBandRehearsal = async (
+export const createBand = async (
+  band: BandZodType,
+): Promise<Response<BandZodType>> => {
+  await connectMongo();
+  const userId = getAuthedUserId();
+
+  const validateBandSchema = ZodBandSchema.safeParse(band);
+
+  if (!validateBandSchema.success) {
+    return {
+      success: false,
+      errors: validateBandSchema.error.errors,
+    };
+  }
+
+  try {
+    await setRateLimit();
+
+    const newBand = new BandModel({
+      ...validateBandSchema.data,
+      createdBy: userId,
+    });
+    await newBand.save();
+
+    if (!newBand) {
+      return {
+        success: false,
+        errors: { message: 'Failed to create band' },
+      };
+    }
+
+    await StudioModel.findByIdAndUpdate(validateBandSchema.data.studioId, {
+      $push: { bands: newBand._id },
+    });
+
+    revalidateTag('bands');
+
+    return {
+      success: true,
+      data: {
+        _id: newBand._id?.toString(),
+        name: newBand.name,
+        location: newBand.location,
+        rehearsals: newBand.rehearsals,
+        studioId: newBand.studioId.toString(),
+        createdBy: newBand.createdBy,
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as any).code === 11000
+    ) {
+      const keyValue = (error as any).keyValue;
+      if (keyValue && keyValue.name && keyValue.studioId) {
+        return {
+          success: false,
+          errors: {
+            message: 'A band with this name already exists in this studio',
+          },
+        };
+      }
+    }
+    return {
+      success: false,
+      errors: { message: 'Failed to create or update band' },
+    };
+  }
+};
+
+const createExistingBandRehearsal = async (
   bandId: string,
   studioId: string,
   rehearsal: ScheduleFormType['rehearsal'],
   repeatWeeks: number,
+  createdBy: string,
 ) => {
   if (!isStartBeforeEnd(rehearsal.start, rehearsal.end)) {
     return {
@@ -81,9 +154,11 @@ const updateBandRehearsal = async (
     },
 
     {
-      $push: {
-        rehearsals: { $each: rehearsals },
-      },
+      $each: rehearsals.map((rehearsal) => ({
+        ...rehearsal,
+        bandId,
+        createdBy,
+      })),
     },
   );
 
@@ -109,84 +184,12 @@ const updateBandRehearsal = async (
         title: rehearsal.title,
       })),
       studioId: updateBand.studioId.toString(),
+      createdBy: updateBand.createdBy,
     },
   };
 };
 
-export const createBand = async (
-  band: BandZodType,
-): Promise<Response<BandZodType>> => {
-  await connectMongo();
-  const userId = getAuthedUserId();
-
-  const validateBandSchema = ZodBandSchema.safeParse(band);
-
-  if (!validateBandSchema.success) {
-    return {
-      success: false,
-      errors: validateBandSchema.error.errors,
-    };
-  }
-
-  try {
-    await setRateLimit();
-
-    const newBand = new BandModel({
-      ...validateBandSchema.data,
-      createdBy: userId,
-    });
-    await newBand.save();
-
-    console.log('newBand', newBand);
-    if (!newBand) {
-      return {
-        success: false,
-        errors: { message: 'Failed to create band' },
-      };
-    }
-
-    await StudioModel.findByIdAndUpdate(validateBandSchema.data.studioId, {
-      $push: { bands: newBand._id },
-    });
-
-    revalidateTag('bands');
-
-    return {
-      success: true,
-      data: {
-        _id: newBand._id?.toString(),
-        name: newBand.name,
-        location: newBand.location,
-        rehearsals: newBand.rehearsals,
-        studioId: newBand.studioId.toString(),
-      },
-    };
-  } catch (error) {
-    console.error(error);
-    console.error(error);
-    if (
-      error instanceof Error &&
-      'code' in error &&
-      (error as any).code === 11000
-    ) {
-      const keyValue = (error as any).keyValue;
-      if (keyValue && keyValue.name && keyValue.studioId) {
-        return {
-          success: false,
-          errors: {
-            message: 'A band with this name already exists in this studio',
-          },
-        };
-      }
-    }
-    return {
-      success: false,
-      errors: { message: 'Failed to create or update band' },
-    };
-  }
-};
-
-const createBandFromModal = async (
+const createBandWithRehearsal = async (
   band: BandZodType,
   repeatWeeks: number,
 ): Promise<Response<BandZodType>> => {
@@ -199,12 +202,21 @@ const createBandFromModal = async (
 
   const rehearsals = createRehearsals(band.rehearsals[0], repeatWeeks);
 
-  const newBandData = {
+  // Create the band instance without saving
+  const newBand = new BandModel({
     ...band,
-    rehearsals,
-  };
+    rehearsals: [], // Start with an empty array
+  });
 
-  const newBand = new BandModel(newBandData);
+  // Now we can use newBand._id to set the bandId for rehearsals
+  newBand.rehearsals = rehearsals.map((rehearsal) => ({
+    ...rehearsal,
+    // TODO: figure out how to do this without asserting (maybe typeguard or try to fix types)
+    bandId: newBand._id as string, // ??? ahh shitty types
+    createdBy: band.createdBy,
+  }));
+
+  // Save the band with rehearsals in one operation
   await newBand.save();
 
   if (!newBand) {
@@ -221,12 +233,24 @@ const createBandFromModal = async (
   revalidateTag('studio');
   return {
     success: true,
-    data: newBandData,
+    data: {
+      _id: newBand._id?.toString(),
+      name: newBand.name,
+      location: newBand.location,
+      rehearsals: newBand.rehearsals.map((rehearsal) => ({
+        _id: rehearsal._id?.toString(),
+        start: rehearsal.start,
+        end: rehearsal.end,
+        title: rehearsal.title,
+      })),
+      studioId: newBand.studioId.toString(),
+      createdBy: newBand.createdBy,
+    },
   };
 };
 
 export const createOrUpdateBand = async (
-  band: BandZodType,
+  band: Omit<BandZodType, 'createdBy'>,
   repeatWeeks: number,
 ): Promise<Response<BandZodType>> => {
   await connectMongo();
@@ -236,18 +260,24 @@ export const createOrUpdateBand = async (
     throw new Error('User not found');
   }
 
-  const validateBandSchema = ZodBandSchema.safeParse(band);
+  const validateBandSchema = ZodBandSchema.safeParse({
+    ...band,
+    createdBy: userId,
+  });
 
   if (!validateBandSchema.success) {
+    console.error(validateBandSchema.error.errors);
     return {
       success: false,
       errors: validateBandSchema.error.errors,
     };
   }
 
+  console.log('validateBandSchema', validateBandSchema);
   try {
     await setRateLimit();
 
+    // TODO: Use find one, this is probably not efficient
     const existingBand = await BandModel.find({
       name: validateBandSchema.data.name,
       studioId: validateBandSchema.data.studioId,
@@ -263,15 +293,16 @@ export const createOrUpdateBand = async (
     }
 
     if (existingBand.length > 0) {
-      return await updateBandRehearsal(
+      return await createExistingBandRehearsal(
         existingBand[0]._id.toString(),
         validateBandSchema.data.studioId,
         validateBandSchema.data.rehearsals[0],
         repeatWeeks,
+        userId,
       );
-    } else {
-      return await createBandFromModal(validateBandSchema.data, repeatWeeks);
     }
+
+    return await createBandWithRehearsal(validateBandSchema.data, repeatWeeks);
   } catch (error) {
     console.error(error);
     throw new Error(error as any);

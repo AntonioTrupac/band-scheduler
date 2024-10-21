@@ -37,6 +37,10 @@ export const ZodBandSchema = z.object({
     invalid_type_error: 'Studio must be a string',
     message: 'Studio is required',
   }),
+  createdBy: z.string({
+    invalid_type_error: 'Created by must be a string',
+    message: 'Created by is required',
+  }),
 });
 
 export type BandZodType = z.infer<typeof ZodBandSchema>;

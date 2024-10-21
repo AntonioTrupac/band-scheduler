@@ -176,7 +176,7 @@ export const StudioSchedule = ({
         isOpen={isCreateModalOpen}
         onClose={closeTimeslotModal}
       >
-        <ScheduleTimeslotModal.ScheduleInfo
+        <ScheduleTimeslotModal.ScheduleForm
           bandNames={bandNames}
           studioId={studioId}
           date={selectedDate}

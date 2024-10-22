@@ -3,6 +3,7 @@ import 'server-only';
 import connectMongo from '@/lib/mongodb';
 import BandModel, { BandType } from '@/models/Band';
 import { Response, BandZodType, ZodBandSchema } from '@/types/band';
+import { dataMapper } from '@/lib/dataMapper';
 
 const convertObjectIdToString = (band: BandType) => {
   return {
@@ -40,19 +41,7 @@ export const fetchBands = async (
     return {
       success: true,
       data: validateSchema.data.map((band) => {
-        return {
-          _id: band._id.toString(),
-          name: band.name,
-          location: band.location,
-          rehearsals: band.rehearsals.map((rehearsal) => ({
-            _id: rehearsal._id?.toString(),
-            start: rehearsal.start,
-            end: rehearsal.end,
-            title: rehearsal.title,
-          })),
-          studioId: band.studioId,
-          createdBy: band.createdBy,
-        };
+        return dataMapper(band);
       }),
     };
   } catch (error) {
@@ -112,19 +101,7 @@ export const getBandsByDate = async (studioId: string, date: string) => {
     return {
       success: true,
       data: validateSchema.data.map((band) => {
-        return {
-          _id: band._id.toString(),
-          name: band.name,
-          location: band.location,
-          rehearsals: band.rehearsals.map((rehearsal) => ({
-            _id: rehearsal._id?.toString(),
-            start: rehearsal.start,
-            end: rehearsal.end,
-            title: rehearsal.title,
-          })),
-          studioId: band.studioId,
-          createdBy: band.createdBy,
-        };
+        return dataMapper(band);
       }),
     };
   } catch (error) {

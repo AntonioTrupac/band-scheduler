@@ -7,6 +7,7 @@ import { unstable_cache as cache } from 'next/cache';
 import Link from 'next/link';
 
 const getCachedBands = cache(async (id: string) => fetchBands(id), ['bands'], {
+  revalidate: 60,
   tags: ['bands'],
 });
 

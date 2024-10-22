@@ -51,6 +51,7 @@ export const fetchBands = async (
             title: rehearsal.title,
           })),
           studioId: band.studioId,
+          createdBy: band.createdBy,
         };
       }),
     };

@@ -58,7 +58,10 @@ export const createBand = async (
   await connectMongo();
   const userId = getAuthedUserId();
 
-  const validateBandSchema = ZodBandSchema.safeParse(band);
+  const validateBandSchema = ZodBandSchema.safeParse({
+    ...band,
+    createdBy: userId,
+  });
 
   if (!validateBandSchema.success) {
     return {
@@ -312,104 +315,6 @@ export const createOrUpdateBand = async (
   }
 };
 
-export const createBandSchedule = async (
-  data: ScheduleFormType,
-  studioId: string,
-  bandId: string,
-) => {
-  await connectMongo();
-  const _ = getAuthedUserId();
-
-  const validateBandSchema = PickedZodCreateScheduleSchema.safeParse(data);
-  if (!validateBandSchema.success) {
-    return {
-      success: false,
-      errors: validateBandSchema.error.errors,
-    };
-  }
-
-  if (
-    !isStartBeforeEnd(
-      validateBandSchema.data.rehearsal.start,
-      validateBandSchema.data.rehearsal.end,
-    )
-  ) {
-    return {
-      success: false,
-      errors: { message: 'Start time should be before end time' },
-    };
-  }
-
-  try {
-    await setRateLimit();
-
-    const existingBands = await BandModel.find({
-      studioId,
-    }).lean();
-
-    if (!existingBands) {
-      return {
-        success: false,
-        errors: { message: 'Band not found' },
-      };
-    }
-
-    const hasConflict = hasTimeslotConflict(existingBands, data.rehearsal);
-
-    if (hasConflict) {
-      return {
-        success: false,
-        errors: { message: 'Rehearsal slot is already taken' },
-      };
-    }
-
-    const adjustedRehearsal = {
-      ...data.rehearsal,
-      start: subMinutes(new Date(data.rehearsal.start), 15),
-      end: addMinutes(new Date(data.rehearsal.end), 15),
-    };
-
-    const band = await BandModel.findOneAndUpdate(
-      { _id: bandId, studioId },
-      {
-        $push: {
-          rehearsals: [adjustedRehearsal],
-        },
-      },
-      { new: true },
-    );
-
-    if (!band) {
-      return {
-        success: false,
-        errors: { message: 'Band not found' },
-      };
-    }
-
-    return {
-      success: true,
-      data: {
-        _id: band._id?.toString(),
-        name: band.name,
-        location: band.location,
-        rehearsals: band.rehearsals.map((rehearsal) => ({
-          _id: rehearsal._id?.toString(),
-          start: rehearsal.start,
-          end: rehearsal.end,
-          title: rehearsal.title,
-        })),
-        studioId: band.studioId.toString(),
-      },
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      success: false,
-      errors: { message: 'Failed to create band schedule' },
-    };
-  }
-};
-
 export const deleteSchedule = async (
   bandId: string,
   scheduleId: string,
@@ -453,7 +358,7 @@ export const updateTimeslot = async (
   rehearsal: ScheduleFormType['rehearsal'],
 ) => {
   await connectMongo();
-  const _ = getAuthedUserId();
+  const userId = getAuthedUserId();
 
   const validateRehearsalSchema = PickedZodCreateScheduleSchema.safeParse({
     rehearsal,

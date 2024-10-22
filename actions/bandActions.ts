@@ -152,14 +152,18 @@ const createExistingBandRehearsal = async (
       _id: bandId,
       studioId,
     },
-
     {
-      $each: rehearsals.map((rehearsal) => ({
-        ...rehearsal,
-        bandId,
-        createdBy,
-      })),
+      $push: {
+        rehearsals: {
+          $each: rehearsals.map((rehearsal) => ({
+            ...rehearsal,
+            bandId,
+            createdBy,
+          })),
+        },
+      },
     },
+    { new: true },
   );
 
   if (!updateBand) {
@@ -273,7 +277,6 @@ export const createOrUpdateBand = async (
     };
   }
 
-  console.log('validateBandSchema', validateBandSchema);
   try {
     await setRateLimit();
 

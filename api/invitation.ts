@@ -23,8 +23,6 @@ export const createInvitation = async ({
   studioId,
   email,
 }: CreateInvitationParams): Promise<Response<InvitationZodType>> => {
-  await connectMongo();
-
   const userId = getAuthedUserId();
 
   if (!userId) {
@@ -33,6 +31,7 @@ export const createInvitation = async ({
       errors: { message: 'User not found' },
     };
   }
+  await connectMongo();
 
   const token = crypto.randomUUID();
   const expiresAtDefault = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // token expires in 7 days
@@ -74,7 +73,6 @@ export const createInvitation = async ({
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
     const invitationLink = `${baseUrl}/invitation/sign-up?token=${parsedData.data.token}`;
 
     const { error: emailError } = await resend.emails.send({

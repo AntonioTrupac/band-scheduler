@@ -5,8 +5,10 @@ import StudioModel from '@/models/Studio';
 import { ZodStudioSchema } from '@/types/studio';
 
 import { cache } from 'react';
+import { getAuthedUserId } from './auth';
 
 export const getStudioById = cache(async (studioId: string) => {
+  const _ = getAuthedUserId();
   await connectMongo();
 
   try {
@@ -46,6 +48,7 @@ export const getStudioById = cache(async (studioId: string) => {
 });
 
 export const getStudios = async (userId: string) => {
+  const _ = getAuthedUserId();
   await connectMongo();
 
   try {

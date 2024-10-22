@@ -28,19 +28,19 @@ export const fetchBands = async (
       return convertObjectIdToString(band);
     });
 
-    const validateSchema = ZodBandSchema.array().safeParse(bandsWithStudioId);
+    const validatedSchema = ZodBandSchema.array().safeParse(bandsWithStudioId);
 
-    if (!validateSchema.success) {
-      console.error(validateSchema.error.errors);
+    if (!validatedSchema.success) {
+      console.error(validatedSchema.error.errors);
       return {
         success: false,
-        errors: validateSchema.error.errors,
+        errors: validatedSchema.error.errors,
       };
     }
 
     return {
       success: true,
-      data: validateSchema.data.map((band) => {
+      data: validatedSchema.data.map((band) => {
         return dataMapper(band);
       }),
     };
@@ -86,21 +86,21 @@ export const getBandsByDate = async (studioId: string, date: string) => {
       };
     });
 
-    const validateSchema = ZodBandSchema.array().safeParse(
+    const validatedSchema = ZodBandSchema.array().safeParse(
       bandsWithFilteredRehearsals,
     );
 
-    if (!validateSchema.success) {
-      console.error(validateSchema.error.errors);
+    if (!validatedSchema.success) {
+      console.error(validatedSchema.error.errors);
       return {
         success: false,
-        errors: validateSchema.error.errors,
+        errors: validatedSchema.error.errors,
       };
     }
 
     return {
       success: true,
-      data: validateSchema.data.map((band) => {
+      data: validatedSchema.data.map((band) => {
         return dataMapper(band);
       }),
     };

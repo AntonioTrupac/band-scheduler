@@ -22,6 +22,7 @@ import {
 import { auth } from '@clerk/nextjs/server';
 import { getAuthedUserId } from '@/api/auth';
 import { setRateLimit } from '@/api/upstash';
+import { dataMapper } from '@/lib/dataMapper';
 
 const createRehearsals = (
   rehearsal: ScheduleFormType['rehearsal'],
@@ -94,14 +95,7 @@ export const createBand = async (
 
     return {
       success: true,
-      data: {
-        _id: newBand._id?.toString(),
-        name: newBand.name,
-        location: newBand.location,
-        rehearsals: newBand.rehearsals,
-        studioId: newBand.studioId.toString(),
-        createdBy: newBand.createdBy,
-      },
+      data: dataMapper(newBand),
     };
   } catch (error) {
     console.error(error);
@@ -179,20 +173,7 @@ const createExistingBandRehearsal = async (
   revalidateTag('studio');
   return {
     success: true,
-    // TODO: write a transform function to return the data in the correct format
-    data: {
-      _id: updateBand._id?.toString(),
-      name: updateBand.name,
-      location: updateBand.location,
-      rehearsals: updateBand.rehearsals.map((rehearsal) => ({
-        _id: rehearsal._id?.toString(),
-        start: rehearsal.start,
-        end: rehearsal.end,
-        title: rehearsal.title,
-      })),
-      studioId: updateBand.studioId.toString(),
-      createdBy: updateBand.createdBy,
-    },
+    data: dataMapper(updateBand),
   };
 };
 
@@ -240,19 +221,7 @@ const createBandWithRehearsal = async (
   revalidateTag('studio');
   return {
     success: true,
-    data: {
-      _id: newBand._id?.toString(),
-      name: newBand.name,
-      location: newBand.location,
-      rehearsals: newBand.rehearsals.map((rehearsal) => ({
-        _id: rehearsal._id?.toString(),
-        start: rehearsal.start,
-        end: rehearsal.end,
-        title: rehearsal.title,
-      })),
-      studioId: newBand.studioId.toString(),
-      createdBy: newBand.createdBy,
-    },
+    data: dataMapper(newBand),
   };
 };
 
@@ -358,7 +327,7 @@ export const updateTimeslot = async (
   rehearsal: ScheduleFormType['rehearsal'],
 ) => {
   await connectMongo();
-  const userId = getAuthedUserId();
+  const _ = getAuthedUserId();
 
   const validateRehearsalSchema = PickedZodCreateScheduleSchema.safeParse({
     rehearsal,
@@ -426,18 +395,7 @@ export const updateTimeslot = async (
 
     return {
       success: true,
-      data: {
-        _id: band._id?.toString(),
-        name: band.name,
-        location: band.location,
-        rehearsals: band.rehearsals.map((rehearsal) => ({
-          _id: rehearsal._id?.toString(),
-          start: rehearsal.start,
-          end: rehearsal.end,
-          title: rehearsal.title,
-        })),
-        studioId: band.studioId.toString(),
-      },
+      data: dataMapper(band),
     };
   } catch (error) {
     return {

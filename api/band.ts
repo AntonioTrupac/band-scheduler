@@ -123,6 +123,7 @@ export const getBandsByDate = async (studioId: string, date: string) => {
             title: rehearsal.title,
           })),
           studioId: band.studioId,
+          createdBy: band.createdBy,
         };
       }),
     };

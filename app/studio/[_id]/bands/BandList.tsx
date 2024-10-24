@@ -3,16 +3,18 @@ import { CreateBandTrigger } from '@/components/CreateBandTrigger';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import { ErrorWrapper } from '@/components/ui/error-wrapper';
-import { unstable_cache as cache } from 'next/cache';
+import { PublicMetadata } from '@/lib/utils';
+import { auth } from '@clerk/nextjs/server';
 import Link from 'next/link';
+import { DeleteBandTrigger } from '@/components/DeleteBandTrigger';
 
-const getCachedBands = cache(async (id: string) => fetchBands(id), ['bands'], {
-  revalidate: 60,
-  tags: ['bands'],
-});
+export const BandList = async ({ studioId }: { studioId: string }) => {
+  const { sessionClaims } = auth();
+  const userId = sessionClaims?.sub;
+  const bands = await fetchBands(studioId);
 
-export const BandList = async ({ id }: { id: string }) => {
-  const bands = await getCachedBands(id);
+  const { role } = (sessionClaims?.publicMetadata as PublicMetadata) || {};
+  const userHasABand = bands.data?.some((band) => band.createdBy === userId);
 
   if (!bands.success || !bands.data) {
     return (
@@ -24,7 +26,7 @@ export const BandList = async ({ id }: { id: string }) => {
               variant: 'outline',
               className: `w-full`,
             })}
-            href={`/studio/${id}`}
+            href={`/studio/${studioId}`}
           >
             Go back to studio schedule
           </Link>
@@ -37,7 +39,7 @@ export const BandList = async ({ id }: { id: string }) => {
     <main className="flex flex-col min-h-[calc(100vh-128px)] bg-gray-50 px-12 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-xl">List of registered bands</h1>
-        <CreateBandTrigger id={id} />
+        {!userHasABand && <CreateBandTrigger id={studioId} />}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
@@ -73,6 +75,12 @@ export const BandList = async ({ id }: { id: string }) => {
             >
               Schedule a timeslot
             </Link> */}
+            {role === 'admin' && (
+              <DeleteBandTrigger
+                bandId={band._id.toString()}
+                studioId={studioId}
+              />
+            )}
           </Card>
         ))}
       </div>

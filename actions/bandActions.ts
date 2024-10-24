@@ -18,6 +18,8 @@ import { getAuthedUserId } from '@/api/auth';
 import { setRateLimit } from '@/api/upstash';
 import { dataMapper } from '@/lib/dataMapper';
 import { createRehearsals } from './bandActionHelpers';
+import { unknown } from 'zod';
+import mongoose from 'mongoose';
 
 export const createBand = async (
   band: BandZodType,
@@ -368,5 +370,76 @@ export const updateTimeslot = async (
       success: false,
       errors: { message: 'Failed to update band schedule' },
     };
+  }
+};
+
+type DeleteBandResponse = {
+  success: boolean;
+  errors?: { message: string };
+};
+
+export const deleteBand = async (
+  bandId: string,
+  studioId: string,
+): Promise<DeleteBandResponse> => {
+  const userId = getAuthedUserId();
+
+  await connectMongo();
+
+  // Start a session for the transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    await setRateLimit();
+
+    const band = await BandModel.findOne({
+      _id: bandId,
+      studioId,
+      $or: [
+        { createdBy: userId }, // Band creator
+        { studioId: { $in: studioId } }, // User is part of the studio
+      ],
+    }).session(session);
+
+    if (!band) {
+      await session.abortTransaction();
+      return {
+        success: false,
+        errors: { message: 'Band not found' },
+      };
+    }
+
+    // Remove the band from the studio's bands array
+    await StudioModel.findByIdAndUpdate(
+      studioId,
+      {
+        $pull: { bands: bandId },
+      },
+      { session },
+    );
+
+    // Delete the band
+    await BandModel.findByIdAndDelete(bandId).session(session);
+
+    // Commit the transaction
+    await session.commitTransaction();
+
+    revalidateTag('bands');
+    revalidateTag(`studio`);
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    // If anything fails, abort the transaction
+    await session.abortTransaction();
+    console.error(error);
+    return {
+      success: false,
+      errors: { message: 'Failed to delete band' },
+    };
+  } finally {
+    session.endSession();
   }
 };

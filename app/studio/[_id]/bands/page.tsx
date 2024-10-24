@@ -16,7 +16,7 @@ export default function BandsPage({ params }: { params: { _id: string } }) {
         <LoadingSpinner className=" text-black absolute top-[50%] left-[50%]" />
       }
     >
-      <BandList id={params._id} />
+      <BandList studioId={params._id} />
     </Suspense>
   );
 }

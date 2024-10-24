@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { unstable_cache as cache } from 'next/cache';
 
 import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { buttonVariants } from '@/components/ui/button';
@@ -14,13 +13,9 @@ export const metadata: Metadata = {
   description: 'View list of studios.',
 };
 
-const getCachedStudios = cache(getStudios, ['studios'], {
-  tags: ['studios'],
-});
-
 export default async function StudioPage() {
   const userId = getAuthedUserId();
-  const studios = await getCachedStudios(userId);
+  const studios = await getStudios(userId);
 
   if (!studios.success) {
     return <div className="py-12 px-8 text-lg">{studios.errors?.message}</div>;

@@ -1,10 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-
-type PublicMetadata = {
-  role: 'admin' | 'band';
-  studioId: string;
-};
+import { PublicMetadata } from './lib/utils';
 
 const isProtectedRoute = createRouteMatcher(['/studio(.*)']);
 const isAdminRoute = createRouteMatcher(['/studio/create(.*)']);

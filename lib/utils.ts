@@ -59,3 +59,8 @@ export const addWeeks = (date: Date, weeks: number) => {
 
   return newDate;
 };
+
+export type PublicMetadata = {
+  role: 'admin' | 'band';
+  studioId: string;
+};
